@@ -1033,18 +1033,16 @@ function renderKanbanCommande(data){
       var com = esc(r['commercial']||r['Commercial']||'');
       var dat = fmtDate(r['Date']||r['date']||'');
       var note= esc(r['Note']||r['note']||'');
-      // store ri in global map for safe onclick
-      _riMap['c'+ri] = ri;
-      cardsHtml += '<div class="k-card" style="border-left-color:'+col.color+'" onclick="openF1ByIndex(_riMap[\'c'+ri+'\'],\'COMMANDE\')">'
+      cardsHtml += '<div class="k-card" data-ri="'+ri+'" data-type="COMMANDE" style="border-left-color:'+col.color+'">'
         +'<div class="k-card-name">'+cli+'</div>'
         +'<div class="k-card-meta">'
-        +(tel?'<span>📞 '+tel+'</span>':'')
-        +(wil?'<span>📍 '+wil+'</span>':'')
-        +(pro?'<span>📦 '+pro.substring(0,32)+(pro.length>32?'…':'')+'</span>':'')
-        +(tot&&tot!=='—'?'<span style="color:var(--green);font-weight:700">💰 '+tot+' DA</span>':'')
-        +(com?'<span>👤 '+com+'</span>':'')
-        +(dat?'<span style="color:var(--muted);font-size:.68rem">📅 '+dat+'</span>':'')
-        +(note?'<span style="color:var(--muted)">📝 '+note.substring(0,30)+'</span>':'')
+        +(tel?'<span>&#128222; '+tel+'</span>':'')
+        +(wil?'<span>&#128205; '+wil+'</span>':'')
+        +(pro?'<span>&#128230; '+pro.substring(0,32)+(pro.length>32?'&#8230;':'')+'</span>':'')
+        +(tot&&tot!=='—'?'<span style="color:var(--green);font-weight:700">&#128176; '+tot+' DA</span>':'')
+        +(com?'<span>&#128100; '+com+'</span>':'')
+        +(dat?'<span style="color:var(--muted);font-size:.68rem">&#128197; '+dat+'</span>':'')
+        +(note?'<span style="color:var(--muted)">&#128221; '+note.substring(0,30)+'</span>':'')
         +'</div>'
         +'</div>';
     });
@@ -1053,30 +1051,20 @@ function renderKanbanCommande(data){
     }
     html += '<div class="k-col">'
       +'<div class="k-col-head">'
-      +'<div class="k-col-title" style="color:'+col.color+'">'+col.label
-        +'<span class="k-col-cnt">'+cards.length+'</span></div>'
+      +'<div class="k-col-title" style="color:'+col.color+'">'+col.label+'<span class="k-col-cnt">'+cards.length+'</span></div>'
       +'</div>'
       +'<div class="k-cards">'+cardsHtml+'</div>'
       +'</div>';
   });
   board.innerHTML = html;
+  // Attach click handlers after render
+  board.querySelectorAll('.k-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      openF1ByIndex(parseInt(this.getAttribute('data-ri')), this.getAttribute('data-type'));
+    });
+  });
 }
 
-
-// ── TICKET KANBAN ──────────────────────────────────────
-var TKT_COLS = [
-  {key:'NV',       label:'NV',       color:'#f59e0b'},
-  {key:'En cours', label:'En cours', color:'#3b82f6'},
-  {key:'Résolu',   label:'Résolu',   color:'#22c55e'},
-  {key:'Annullé',  label:'Annullé',  color:'#ef4444'},
-];
-var PRS_COLS = [
-  {key:'Prospect',  label:'Prospect',  color:'#a855f7'},
-  {key:'Contacté',  label:'Contacté',  color:'#3b82f6'},
-  {key:'Intéressé', label:'Intéressé', color:'#f59e0b'},
-  {key:'Converti',  label:'Converti',  color:'#22c55e'},
-  {key:'Perdu',     label:'Perdu',     color:'#ef4444'},
-];
 
 function renderKanbanTicket(data){
   var board = document.getElementById('boardTicket');
@@ -1092,14 +1080,13 @@ function renderKanbanTicket(data){
       var obj = esc(r['Note']||r['Produit']||r['produit']||'');
       var tec = esc(r['technicien']||'');
       var dat = fmtDate(r['Date']||r['date']||'');
-      _riMap['t'+ri] = ri;
-      cardsHtml += '<div class="k-card" style="border-left-color:'+col.color+'" onclick="openF1ByIndex(_riMap[\'t'+ri+'\'],\'TICKET\')">'
+      cardsHtml += '<div class="k-card" data-ri="'+ri+'" data-type="TICKET" style="border-left-color:'+col.color+'">'
         +'<div class="k-card-name">'+cli+'</div>'
         +'<div class="k-card-meta">'
-        +(tel?'<span>📞 '+tel+'</span>':'')
-        +(obj?'<span>📝 '+obj.substring(0,35)+'</span>':'')
-        +(tec?'<span>🔧 '+tec+'</span>':'')
-        +(dat?'<span style="color:var(--muted);font-size:.68rem">📅 '+dat+'</span>':'')
+        +(tel?'<span>&#128222; '+tel+'</span>':'')
+        +(obj?'<span>&#128221; '+obj.substring(0,35)+'</span>':'')
+        +(tec?'<span>&#128296; '+tec+'</span>':'')
+        +(dat?'<span style="color:var(--muted);font-size:.68rem">&#128197; '+dat+'</span>':'')
         +'</div>'
         +'</div>';
     });
@@ -1108,13 +1095,17 @@ function renderKanbanTicket(data){
     }
     html += '<div class="k-col">'
       +'<div class="k-col-head">'
-      +'<div class="k-col-title" style="color:'+col.color+'">'+col.label
-        +'<span class="k-col-cnt">'+cards.length+'</span></div>'
+      +'<div class="k-col-title" style="color:'+col.color+'">'+col.label+'<span class="k-col-cnt">'+cards.length+'</span></div>'
       +'</div>'
       +'<div class="k-cards">'+cardsHtml+'</div>'
       +'</div>';
   });
   board.innerHTML = html;
+  board.querySelectorAll('.k-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      openF1ByIndex(parseInt(this.getAttribute('data-ri')), this.getAttribute('data-type'));
+    });
+  });
 }
 
 
@@ -1145,9 +1136,15 @@ function renderKanbanProsp(data){
 // Helper: open modal using rowIndex (fixes the bug)
 function openF1ByIndex(ri, type){
   var riInt = parseInt(ri);
-  var r = F1data.find(function(x){ return parseInt(x._rowIndex) === riInt; });
-  if(!r){ toast('Element introuvable (ri='+ri+')','e'); return; }
-  openF1Modal(riInt, type);
+  if(isNaN(riInt)){ toast('Index invalide','e'); return; }
+  // Search with type coercion
+  var r = null;
+  for(var i=0;i<F1data.length;i++){
+    if(parseInt(F1data[i]._rowIndex) === riInt){ r = F1data[i]; break; }
+  }
+  if(!r){ toast('Element non trouve (ri='+riInt+')','e'); return; }
+  // Pass integer rowIndex to modal
+  openF1Modal(riInt, type || typ(r));
 }
 
 
@@ -1211,7 +1208,7 @@ function openF1Modal(ri, type){
   const r = isEdit ? F1data.find(function(x){ return parseInt(x._rowIndex)===parseInt(ri); })||{} : {};
   const t = isEdit ? typ(r) : (type||'COMMANDE');
   document.getElementById('f1ModalTitle').textContent = isEdit?`Modifier — ${t}`:`Nouvelle ${t}`;
-  document.getElementById('f1_ri').value = isEdit?ri:'';
+  document.getElementById('f1_ri').value = isEdit ? parseInt(ri) : '';
   document.getElementById('f1_type').value = t;
   document.getElementById('f1DelBtn').style.display = isEdit&&CU?.type==='admin'?'inline-flex':'none';
   document.getElementById('f1ConvertBar').style.display = isEdit?'block':'none';
@@ -1261,8 +1258,9 @@ function calcF1Total(){
 async function saveF1(){
   const client=document.getElementById('f1_client').value.trim();
   if(!client){toast('Client requis','e');return;}
-  const ri=document.getElementById('f1_ri').value;
-  const isEdit=ri!=='' && ri!==null && ri!==undefined;
+  const riRaw=document.getElementById('f1_ri').value;
+  const ri = riRaw !== '' ? parseInt(riRaw) : null;
+  const isEdit = ri !== null && !isNaN(ri);
   const type=document.getElementById('f1_type').value;
   const row={
     'TYPE':type,'Client':client,
@@ -1302,8 +1300,9 @@ async function deleteF1(ri){
 }
 
 function deleteF1FromModal(){
-  const ri=parseInt(document.getElementById('f1_ri').value);
-  closeM('f1Modal');deleteF1(ri);
+  var riDel=parseInt(document.getElementById('f1_ri').value);
+  if(isNaN(riDel)){toast('Index invalide','e');return;}
+  closeM('f1Modal');deleteF1(riDel);
 }
 
 // ═══════════════════════════════════════════════
@@ -1331,6 +1330,10 @@ function renderTaskBoard(){
       </div>
     </div>`;
   }).join('');
+  // Click handlers
+  document.getElementById('taskBoard').querySelectorAll('.tdb-cards [data-ri]').forEach(function(el){
+    el.addEventListener('click', function(){ openTaskModal(parseInt(this.getAttribute('data-ri'))); });
+  });
 }
 
 function openTaskModal(ri){
@@ -1353,8 +1356,9 @@ function openTaskModal(ri){
 }
 
 async function saveTask(){
-  const ri=document.getElementById('tm_ri').value;
-  const isEdit=ri!=='';
+  const tmRiRaw=document.getElementById('tm_ri').value;
+  const ri = tmRiRaw !== '' ? parseInt(tmRiRaw) : null;
+  const isEdit = ri !== null && !isNaN(ri);
   const row={
     'code':document.getElementById('tm_code').value.trim(),
     'titre':document.getElementById('tm_titre').value.trim(),
@@ -1369,7 +1373,7 @@ async function saveTask(){
     'commentaire':document.getElementById('tm_comment').value.trim(),
     'date':new Date().toISOString().split('T')[0],
   };
-  const res=await api(isEdit?'updateTask':'addTask', isEdit?{rowIndex:parseInt(ri),row}:{row});
+  const res=await api(isEdit?'updateTask':'addTask', isEdit?{rowIndex:ri,row}:{row});
   if(res.ok){toast(isEdit?'Mis à jour':'Ajouté','s');closeM('taskModal');loadTask();}
   else toast(res.error,'e');
 }
@@ -1444,10 +1448,11 @@ async function saveCaisse(){
   const type=document.getElementById('cm_type').value;
   const raw=parseFloat(document.getElementById('cm_montant').value)||0;
   const montant=type==='Sortie'?-Math.abs(raw):Math.abs(raw);
-  const ri=document.getElementById('cm_ri').value;
-  const isEdit=ri!=='';
+  const cmRiRaw=document.getElementById('cm_ri').value;
+  const ri = cmRiRaw !== '' ? parseInt(cmRiRaw) : null;
+  const isEdit = ri !== null && !isNaN(ri);
   const row={'Date':new Date().toISOString().split('T')[0],'Motif':motif,'Entrée':type,'Montant':montant,'Détail':document.getElementById('cm_detail').value.trim(),'User':document.getElementById('cm_user').value||CU?.nom||'','Groupe':'ANTIC'};
-  const res=await api(isEdit?'updateCaisse':'addCaisse', isEdit?{rowIndex:parseInt(ri),row}:{row});
+  const res=await api(isEdit?'updateCaisse':'addCaisse', isEdit?{rowIndex:ri,row}:{row});
   if(res.ok){toast(isEdit?'Mis à jour':'Ajouté','s');closeM('caisseModal');loadCaisse();}
   else toast(res.error,'e');
 }
