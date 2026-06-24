@@ -1240,43 +1240,64 @@ function getPickedStatus() {
 }
 
 function cvtType(t) {
-  // Convert = create a NEW row of type t, keep original unchanged
+  // Get original row BEFORE closing modal
   const ri = $('f1-ri').value;
-  if (!ri) { toast('Ouvrez d\'abord un enregistrement','e'); return; }
+  if (!ri) { toast('Erreur: index manquant','e'); return; }
   const riInt = parseInt(ri);
   const orig = F1.find(x => parseInt(x._rowIndex) === riInt);
   if (!orig) { toast('Enregistrement introuvable','e'); return; }
 
-  if (!confirm('Créer un nouveau ' + t + ' basé sur cette entrée ? L\'original sera conservé.')) return;
+  // Close modal FIRST, then confirm (avoid saveF1 being triggered)
+  closeOv('ov-f1');
 
-  // Build new row from original data, change TYPE and reset status
+  // Small delay to ensure modal is closed before confirm dialog
+  setTimeout(function() {
+    if (!confirm('Créer un nouveau ' + t + ' basé sur cette entrée ?\nL\'original sera conservé.')) return;
+    doCvtType(orig, t);
+  }, 150);
+}
+
+async function doCvtType(orig, t) {
   const newStatuses = t==='TICKET' ? S_TKT : t==='PROSPECTION' ? S_PRS : S_CMD;
   const row = {
     TYPE:              t,
     Client:            orig.Client||orig.client||'',
-    Téléphone:         orig.Téléphone||orig.Telephone||'',
+    'Téléphone':       orig['Téléphone']||orig.Telephone||'',
     Wilaya:            orig.Wilaya||orig.wilaya||'',
     Commune:           orig.Commune||orig.commune||'',
     Produit:           orig.Produit||orig.produit||'',
-    'Prix Produit':    orig['Prix Produit']||0,
-    'Tarif Livraison': orig['Tarif Livraison']||0,
-    Total:             orig.Total||orig.total||0,
+    'Prix Produit':    0,
+    'Tarif Livraison': 0,
+    Total:             0,
     Statu:             newStatuses[0].k,
     commercial:        orig.commercial||orig.Commercial||'',
     technicien:        orig.technicien||'',
-    Note:              orig.Note||orig.note||'',
+    Note:              '',
     Date:              new Date().toISOString().split('T')[0],
   };
-
-  call('addOrder', {row}).then(res => {
-    if (res.ok) {
-      toast(t + ' créé avec succès ✓', 's');
-      closeOv('ov-f1');
-      loadF1();
-    } else {
-      toast(res.error||'Erreur', 'e');
+  showL('Création en cours...');
+  const res = await call('addOrder', {row});
+  hideL();
+  if (res.ok) {
+    toast(t + ' créé ✓ — ouverture pour modification...', 's');
+    // Reload F1 then open the new row for editing
+    const r2 = await call('getSheet', {sheet:'Feuille 1'});
+    if (r2.ok) {
+      F1 = r2.rows;
+      updateBadges();
+      // The new row is the last one added — find it by highest _rowIndex matching our data
+      const newRow = F1.slice().sort((a,b) => b._rowIndex - a._rowIndex)
+        .find(r => typ(r)===t && (r.Client||r.client||'')===(orig.Client||orig.client||''));
+      if (newRow) {
+        // Navigate to the right page first
+        goPage(t==='TICKET'?'tkt':t==='PROSPECTION'?'prs':'cmd');
+        // Small delay then open modal
+        setTimeout(() => openModalF1(parseInt(newRow._rowIndex), t), 200);
+      }
     }
-  });
+  } else {
+    toast(res.error||'Erreur lors de la création', 'e');
+  }
 }
 
 function calcF1() {
