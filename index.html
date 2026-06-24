@@ -280,8 +280,33 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
 
       <!-- TDB -->
       <div class="page on" id="page-tdb">
-        <div class="ph"><h2>📊 Table de Bord</h2><button class="btn btn-ghost btn-sm" onclick="loadAll()">🔄 Actualiser</button></div>
-        <div id="tdb-content" style="display:flex;gap:.85rem;overflow-x:auto;overflow-y:hidden;height:calc(100vh - 50px - 5rem)"></div>
+        <div class="ph">
+          <h2>📊 Table de Bord</h2>
+          <div class="ph-r">
+            <button class="btn btn-ghost btn-sm" onclick="resetTdbFilters()">✕ Reset</button>
+            <button class="btn btn-ghost btn-sm" onclick="loadAll()">🔄</button>
+          </div>
+        </div>
+        <div class="filters" id="tdb-filters">
+          <input class="inp inp-sm" id="tdb-q" placeholder="🔍 Client / Produit..." oninput="renderTDB()" style="width:170px"/>
+          <input class="inp inp-sm" id="tdb-d1" type="date" onchange="renderTDB()" title="Du"/>
+          <input class="inp inp-sm" id="tdb-d2" type="date" onchange="renderTDB()" title="Au"/>
+          <select class="inp inp-sm" id="tdb-col" onchange="renderTDB()">
+            <option value="">Toutes les colonnes</option>
+            <option value="COMMANDE">📦 Commande</option>
+            <option value="TICKET">🎫 Ticket IT</option>
+            <option value="TASK">✅ Task</option>
+            <option value="CAISSE">💰 Caisse</option>
+            <option value="PROSPECTION">🎯 Prospection</option>
+          </select>
+          <select class="inp inp-sm" id="tdb-user" onchange="renderTDB()">
+            <option value="">Tous les utilisateurs</option>
+          </select>
+          <label style="display:flex;align-items:center;gap:.35rem;font-size:.78rem;color:var(--dim);cursor:pointer">
+            <input type="checkbox" id="tdb-today" onchange="renderTDB()" checked/> Aujourd'hui seulement
+          </label>
+        </div>
+        <div id="tdb-content" style="display:flex;gap:.85rem;overflow-x:auto;overflow-y:hidden;height:calc(100vh - 50px - 9rem)"></div>
       </div>
 
       <!-- COMMANDE -->
@@ -840,59 +865,94 @@ function typ(r) { return String(r.TYPE||r.type||'COMMANDE').toUpperCase(); }
 // TABLE DE BORD
 // ════════════════════════════════════════════════════════
 function renderTDB() {
-  const today = new Date().toISOString().split('T')[0];
-  const isToday = v => { const d = fmtDate(v); return d && d === today; };
+  // Read filters
+  const q       = (document.getElementById('tdb-q')?.value||'').toLowerCase().trim();
+  const d1      = document.getElementById('tdb-d1')?.value||'';
+  const d2      = document.getElementById('tdb-d2')?.value||'';
+  const colF    = document.getElementById('tdb-col')?.value||'';
+  const userF   = (document.getElementById('tdb-user')?.value||'').toUpperCase().trim();
+  const todayOnly = document.getElementById('tdb-today')?.checked ?? true;
+  const today   = new Date().toISOString().split('T')[0];
+
+  // Populate user select dynamically
+  const userSel = document.getElementById('tdb-user');
+  if (userSel) {
+    const prev = userSel.value;
+    const names = [...new Set(USERS.map(u => u.NOM||u.nom||'').filter(Boolean))];
+    userSel.innerHTML = '<option value="">Tous les utilisateurs</option>'
+      + names.map(n => '<option value="'+esc(n.toUpperCase())+'">'+esc(n)+'</option>').join('');
+    if (prev) userSel.value = prev;
+  }
+
+  function matchDate(v) {
+    const d = fmtDate(v);
+    if (!d) return false;
+    if (todayOnly && !d1 && !d2) return d === today;
+    if (d1 && d < d1) return false;
+    if (d2 && d > d2) return false;
+    return true;
+  }
+
+  function matchQ(r) {
+    if (!q) return true;
+    return JSON.stringify(r).toLowerCase().includes(q);
+  }
+
+  function matchUser(r) {
+    if (!userF) return true;
+    const com  = String(r.commercial||r.Commercial||'').trim().toUpperCase();
+    const tech = String(r.technicien||r.Technicien||'').trim().toUpperCase();
+    const att  = String(r.attribuer||'').trim().toUpperCase();
+    const usr  = String(r.User||r.user||'').trim().toUpperCase();
+    return com===userF || tech===userF || att===userF || usr===userF;
+  }
 
   const solde = CAISSE.reduce((s,r) => s + parseFloat(r.Montant||0), 0);
 
   const cols = [
-    { label:'COMMANDE',    icon:'📦', color:'#3b82f6',
-      data: F1.filter(r => typ(r)==='COMMANDE' && ((r.Statu||r.statu||'').toLowerCase()==='processing' || isToday(r.Date||r.date))),
+    { key:'COMMANDE',    label:'COMMANDE',    icon:'📦', color:'#3b82f6',
+      data: F1.filter(r => typ(r)==='COMMANDE' && matchQ(r) && matchDate(r.Date||r.date) && matchUser(r)).sort((a,b)=>String(b.Date||b.date||'').localeCompare(String(a.Date||a.date||''))),
       render: r => cardF1(r), add: "openModalF1(null,'COMMANDE')", show: canAccess('cmd') },
-    { label:'TICKET IT',   icon:'🎫', color:'#f97316',
-      data: F1.filter(r => typ(r)==='TICKET' && (['nv','en cours'].includes((r.Statu||'').toLowerCase()) || isToday(r.Date||r.date))).filter(r => CU.type==='admin' || String(CU.acces_obj||'no').toLowerCase()==='yes' || String(r.technicien||r.commercial||'').trim().toUpperCase()===CU.nom.toUpperCase()),
+    { key:'TICKET',      label:'TICKET IT',   icon:'🎫', color:'#f97316',
+      data: F1.filter(r => typ(r)==='TICKET' && matchQ(r) && matchDate(r.Date||r.date) && matchUser(r) && (CU.type==='admin'||String(CU.acces_obj||'no').toLowerCase()==='yes'||String(r.technicien||r.commercial||'').trim().toUpperCase()===CU.nom.toUpperCase())),
       render: r => cardF1(r), add: "openModalF1(null,'TICKET')", show: canAccess('tkt') },
-    { label:'TASK',        icon:'✅', color:'#a855f7',
-      data: TASKS.filter(r => { const p=(r.progression||'NV').toLowerCase(); return (p==='nv'||p==='en cours'||isToday(r.date)) && (CU.type==='admin'||String(CU.acces_obj||'no').toLowerCase()==='yes'||String(r.attribuer||'').trim().toUpperCase()===CU.nom.toUpperCase()); }),
+    { key:'TASK',        label:'TASK',        icon:'✅', color:'#a855f7',
+      data: TASKS.filter(r => matchQ(r) && matchDate(r.date||r.Date) && matchUser(r) && (CU.type==='admin'||String(CU.acces_obj||'no').toLowerCase()==='yes'||String(r.attribuer||'').trim().toUpperCase()===CU.nom.toUpperCase())),
       render: r => cardTask(r), add: "openModalTask(null)", show: canAccess('task') },
-    { label:'CAISSE',      icon:'💰', color:'#22c55e',
-      data: CAISSE.filter(r => isToday(r.Date||r.date)),
+    { key:'CAISSE',      label:'CAISSE',      icon:'💰', color:'#22c55e',
+      data: CAISSE.filter(r => matchDate(r.Date||r.date) && matchQ(r) && matchUser(r)).sort((a,b)=>String(b.Date||b.date||'').localeCompare(String(a.Date||a.date||''))),
       render: r => cardCaisse(r), add: "openModalCaisse(null)", show: canAccess('caisse'),
-      extra: `<div style="font-size:.7rem;color:#4ade80;font-weight:700;margin-top:.2rem">Solde: ${fmtN(solde)} DA</div>` },
-    { label:'PROSPECTION', icon:'🎯', color:'#ec4899',
-      data: F1.filter(r => typ(r)==='PROSPECTION' && isToday(r.Date||r.date) && (CU.type==='admin'||String(CU.acces_obj||'no').toLowerCase()==='yes'||String(r.commercial||'').trim().toUpperCase()===CU.nom.toUpperCase())),
+      extra: '<div style="font-size:.7rem;color:#4ade80;font-weight:700;margin-top:.2rem">Solde: '+fmtN(solde)+' DA</div>' },
+    { key:'PROSPECTION', label:'PROSPECTION', icon:'🎯', color:'#ec4899',
+      data: F1.filter(r => typ(r)==='PROSPECTION' && matchQ(r) && matchDate(r.Date||r.date) && matchUser(r) && (CU.type==='admin'||String(CU.acces_obj||'no').toLowerCase()==='yes'||String(r.commercial||'').trim().toUpperCase()===CU.nom.toUpperCase())),
       render: r => cardF1(r), add: "openModalF1(null,'PROSPECTION')", show: canAccess('prs') },
   ];
 
+  // Apply column filter
+  const visibleCols = colF ? cols.filter(col => col.key === colF) : cols;
+
   const wrap = $('tdb-content');
   wrap.innerHTML = '';
-  cols.filter(c => c.show).forEach(col => {
+  visibleCols.filter(col => col.show).forEach(col => {
     const div = document.createElement('div');
     div.className = 'kcol';
-    div.style.flexShrink = '0';
-    div.style.width = '240px';
-    div.style.display = 'flex';
-    div.style.flexDirection = 'column';
+    div.style.cssText = 'flex-shrink:0;width:240px;display:flex;flex-direction:column';
 
     const head = document.createElement('div');
     head.className = 'kcol-h';
-    head.innerHTML = `
-      <div>
-        <div style="font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em">${col.icon} ${col.label}</div>
-        <div style="font-size:1.5rem;font-weight:800;color:${col.color};line-height:1.1">${col.data.length}</div>
-        ${col.extra||''}
-      </div>
-      <button onclick="${col.add}" style="background:${col.color}22;border:1px solid ${col.color}44;color:${col.color};border-radius:6px;padding:.2rem .5rem;cursor:pointer;font-size:.88rem;font-weight:700">+</button>
-    `;
+    head.innerHTML =
+      '<div>' +
+        '<div style="font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em">' + col.icon + ' ' + col.label + '</div>' +
+        '<div style="font-size:1.5rem;font-weight:800;color:' + col.color + ';line-height:1.1">' + col.data.length + '</div>' +
+        (col.extra||'') +
+      '</div>' +
+      '<button onclick="' + col.add + '" style="background:' + col.color + '22;border:1px solid ' + col.color + '44;color:' + col.color + ';border-radius:6px;padding:.2rem .5rem;cursor:pointer;font-size:.88rem;font-weight:700">+</button>';
     div.appendChild(head);
 
     const cards = document.createElement('div');
     cards.className = 'kcards';
     if (col.data.length) {
-      col.data.forEach(r => {
-        const card = col.render(r);
-        cards.appendChild(card);
-      });
+      col.data.forEach(r => cards.appendChild(col.render(r)));
     } else {
       cards.innerHTML = '<div class="empty" style="padding:.6rem;font-size:.72rem">Aucun élément</div>';
     }
@@ -900,6 +960,13 @@ function renderTDB() {
     wrap.appendChild(div);
   });
 }
+
+function resetTdbFilters() {
+  ['tdb-q','tdb-d1','tdb-d2','tdb-col','tdb-user'].forEach(id => { const el=$(id); if(el) el.value=''; });
+  const cb = $('tdb-today'); if(cb) cb.checked = true;
+  renderTDB();
+}
+
 
 function canAccess(p) {
   if (!CU) return false;
