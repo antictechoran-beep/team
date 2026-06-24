@@ -121,6 +121,64 @@ tbody tr:hover{background:rgba(59,130,246,.04)}
 tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
 .tact{display:flex;gap:3px}
 
+
+/* ── MOBILE NAV (bottom bar) ── */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--bd);z-index:200;padding:0;height:56px}
+.mob-nav-inner{display:flex;height:100%}
+.mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--dim);font-size:.58rem;gap:2px;border:none;background:none;font-family:var(--font);padding:.3rem 0;position:relative;transition:.12s}
+.mob-nav-item.on{color:var(--blue)}
+.mob-nav-item .ico{font-size:1.15rem;line-height:1}
+.mob-nav-badge{position:absolute;top:4px;right:calc(50% - 14px);background:var(--red);color:#fff;font-size:.5rem;padding:.05rem .3rem;border-radius:8px;font-weight:700;min-width:14px;text-align:center}
+.mob-more-btn{position:fixed;bottom:64px;right:1rem;background:var(--blue);color:#fff;width:44px;height:44px;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:1.4rem;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(59,130,246,.4);z-index:199}
+.mob-menu{display:none;position:fixed;bottom:118px;right:1rem;background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:.5rem;z-index:300;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.mob-menu.open{display:block}
+.mob-menu-item{display:flex;align-items:center;gap:.6rem;padding:.55rem .75rem;color:var(--text);font-size:.85rem;cursor:pointer;border-radius:8px;transition:.1s}
+.mob-menu-item:hover,.mob-menu-item.on{background:var(--bg3);color:var(--blue)}
+/* FAB (floating add button) */
+.fab{position:fixed;bottom:70px;left:1rem;background:var(--green);color:#fff;width:48px;height:48px;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:1.6rem;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(34,197,94,.4);z-index:199;line-height:1}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 700px) {
+  /* Hide desktop sidebar */
+  .sidebar { display: none !important; }
+  /* Show mobile nav */
+  .mob-nav { display: flex !important; }
+  .mob-more-btn { display: flex !important; }
+  .fab { display: flex !important; }
+  /* Content takes full width, add bottom padding for nav bar */
+  .body { flex-direction: column; }
+  .content { padding-bottom: 60px; }
+  .page { padding: .75rem; }
+  /* Topbar compact */
+  .topbar { padding: 0 .75rem; height: 46px; }
+  .tb-brand { font-size: .85rem; }
+  .tb-r { gap: .4rem; font-size: .75rem; }
+  /* Kanban: full width columns on mobile */
+  .kboard { height: calc(100vh - 46px - 7rem); }
+  .kcol { width: 200px; }
+  /* Filters wrap */
+  .filters { gap: .35rem; }
+  .filters .inp-sm { font-size: .8rem; }
+  /* Modal full screen on mobile */
+  .ov { align-items: flex-end; padding: 0; }
+  .modal { max-width: 100% !important; width: 100%; margin: 0; border-radius: 16px 16px 0 0; max-height: 90vh; }
+  /* Stats grid 2 cols */
+  .stats { grid-template-columns: 1fr 1fr; }
+  /* Form rows single col on very small screens */
+  .fr2, .fr3 { grid-template-columns: 1fr; gap: .45rem; }
+  /* TDB columns */
+  #tdb-content .kcol { width: 200px; }
+  /* Page header */
+  .ph { margin-bottom: .65rem; }
+  .ph h2 { font-size: .92rem; }
+}
+
+@media (max-width: 400px) {
+  .kcol { width: 175px; }
+  .fr2 { grid-template-columns: 1fr; }
+}
+
+/* ── STATS ── */
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-bottom:.9rem}
 .scard{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:.85rem 1rem}
@@ -362,6 +420,45 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
 
     </div><!-- content -->
   </div><!-- body -->
+
+  <!-- MOBILE BOTTOM NAV -->
+  <div class="mob-nav" id="mob-nav">
+    <div class="mob-nav-inner">
+      <button class="mob-nav-item on" id="mn-tdb" onclick="goPage('tdb');mobNav('tdb')">
+        <span class="ico">📊</span><span>Bord</span>
+      </button>
+      <button class="mob-nav-item" id="mn-cmd" onclick="goPage('cmd');mobNav('cmd')">
+        <span class="ico">📦</span><span>Cmde</span>
+        <span class="mob-nav-badge" id="mnb-cmd" style="display:none"></span>
+      </button>
+      <button class="mob-nav-item" id="mn-tkt" onclick="goPage('tkt');mobNav('tkt')">
+        <span class="ico">🎫</span><span>Ticket</span>
+        <span class="mob-nav-badge" id="mnb-tkt" style="display:none"></span>
+      </button>
+      <button class="mob-nav-item" id="mn-task" onclick="goPage('task');mobNav('task')">
+        <span class="ico">✅</span><span>Task</span>
+        <span class="mob-nav-badge" id="mnb-task" style="display:none"></span>
+      </button>
+      <button class="mob-nav-item" id="mn-caisse" onclick="goPage('caisse');mobNav('caisse')">
+        <span class="ico">💰</span><span>Caisse</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MORE menu button -->
+  <button class="mob-more-btn" id="mob-more-btn" onclick="toggleMobMenu()">⋯</button>
+
+  <!-- MORE menu -->
+  <div class="mob-menu" id="mob-menu">
+    <div class="mob-menu-item" id="mm-prs" onclick="goPage('prs');mobNav('prs');closeMobMenu()">🎯 Prospection</div>
+    <div class="mob-menu-item" id="mm-clients" onclick="goPage('clients');closeMobMenu()">👥 Clients</div>
+    <div class="mob-menu-item" id="mm-stock" onclick="goPage('stock');closeMobMenu()">📦 Stock</div>
+    <div class="mob-menu-item" id="mm-users" onclick="goPage('users');closeMobMenu()" style="display:none">👤 Utilisateurs</div>
+  </div>
+
+  <!-- FAB (floating add button) -->
+  <button class="fab" id="fab" onclick="fabAction()">+</button>
+
 </div><!-- app -->
 
 <!-- MODAL F1 (Commande / Ticket / Prospection) -->
@@ -633,6 +730,8 @@ function startApp() {
     $('tbrole').style.display = 'inline-block';
     $('na-users').style.display = 'flex';
     $('ag').style.display = 'block';
+    const mmu = document.getElementById('mm-users');
+    if (mmu) mmu.style.display = 'flex';
   }
   // hide nav items based on access
   Object.entries(ACC_MAP).forEach(([page, field]) => {
@@ -652,8 +751,9 @@ function doLogout() {
   $('na-users').style.display = 'none';
   $('ag').style.display = 'none';
   $('lgu').value = ''; $('lgp').value = '';
-  // reset nav items
   Object.keys(ACC_MAP).forEach(p => { const el=$('na-'+p); if(el) el.style.display='flex'; });
+  const mmu = document.getElementById('mm-users');
+  if (mmu) mmu.style.display = 'none';
 }
 
 // ════════════════════════════════════════════════════════
@@ -1428,6 +1528,90 @@ function toast(msg, type) {
   c.appendChild(el);
   setTimeout(function(){ el.remove(); }, 3000);
 }
+
+
+// ════════════════════════════════════════════════════════
+// MOBILE
+// ════════════════════════════════════════════════════════
+const MOB_NAV_PAGES = ['tdb','cmd','tkt','task','caisse'];
+
+function mobNav(page) {
+  // Update bottom nav active state
+  MOB_NAV_PAGES.forEach(p => {
+    const el = document.getElementById('mn-' + p);
+    if (el) el.classList.toggle('on', p === page);
+  });
+  // Update more menu
+  document.querySelectorAll('.mob-menu-item').forEach(el => el.classList.remove('on'));
+  const mm = document.getElementById('mm-' + page);
+  if (mm) mm.classList.add('on');
+  // Update FAB action based on page
+  updateFab(page);
+}
+
+function updateFab(page) {
+  const fab = document.getElementById('fab');
+  if (!fab) return;
+  const actions = {
+    cmd:    () => openModalF1(null, 'COMMANDE'),
+    tkt:    () => openModalF1(null, 'TICKET'),
+    task:   () => openModalTask(null),
+    prs:    () => openModalF1(null, 'PROSPECTION'),
+    caisse: () => openModalCaisse(null),
+  };
+  fab._action = actions[page] || null;
+  fab.style.display = fab._action ? 'flex' : 'none';
+}
+
+function fabAction() {
+  const fab = document.getElementById('fab');
+  if (fab && fab._action) fab._action();
+}
+
+function toggleMobMenu() {
+  const m = document.getElementById('mob-menu');
+  m.classList.toggle('open');
+}
+
+function closeMobMenu() {
+  document.getElementById('mob-menu').classList.remove('open');
+}
+
+// Close mob menu on outside click
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('mob-menu');
+  const btn   = document.getElementById('mob-more-btn');
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
+
+// Sync mobile badges
+function updateBadgesAll() {
+  const show = (id, n) => {
+    ['nb-'+id, 'mnb-'+id].forEach(bid => {
+      const el = document.getElementById(bid);
+      if (el) { el.textContent = n; el.style.display = n > 0 ? 'inline-block' : 'none'; }
+    });
+  };
+  show('cmd',  F1.filter(r=>typ(r)==='COMMANDE').length);
+  show('tkt',  F1.filter(r=>typ(r)==='TICKET').length);
+  show('task', TASKS.filter(r=>(r.progression||'NV')!=='Terminé').length);
+  show('prs',  F1.filter(r=>typ(r)==='PROSPECTION').length);
+}
+
+// Override updateBadges to also update mobile
+const _origUpdateBadges = updateBadges;
+window.updateBadges = function() { updateBadgesAll(); };
+
+// On startApp, show admin items in mob menu
+const _origStartApp = startApp;
+// Patch goPage to also update mobile nav
+const _origGoPage = goPage;
+window.goPage = function(p) {
+  _origGoPage(p);
+  mobNav(p);
+};
 
 </script>
 </body>
