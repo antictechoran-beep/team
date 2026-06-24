@@ -296,9 +296,9 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           <input class="inp inp-sm" id="f-cmd-q" placeholder="🔍 Recherche..." oninput="renderCmd()" style="width:170px"/>
           <select class="inp inp-sm" id="f-cmd-s" onchange="renderCmd()">
             <option value="">Tous statuts</option>
-            <option>En Att</option><option>Processing</option><option>Confirmé</option>
+            <option>Processing</option><option>En Att</option><option>Confirmé</option>
             <option>Activé</option><option>Livré</option><option>Payé</option>
-            <option>Annullé</option><option>Reporté</option>
+            <option>Reporté</option><option>Annullé</option>
           </select>
           <select class="inp inp-sm" id="f-cmd-c" onchange="renderCmd()"><option value="">Tous commerciaux</option></select>
           <input class="inp inp-sm" id="f-cmd-d1" type="date" onchange="renderCmd()"/>
@@ -633,7 +633,7 @@ let CU = null;
 let F1 = [], TASKS = [], CAISSE = [], CLIENTS = [], STOCK = [], USERS = [];
 
 // Status configs
-const S_CMD  = [{k:'En Att',c:'#f59e0b'},{k:'Processing',c:'#f97316'},{k:'Confirmé',c:'#3b82f6'},{k:'Activé',c:'#22c55e'},{k:'Livré',c:'#14b8a6'},{k:'Payé',c:'#a855f7'},{k:'Annullé',c:'#ef4444'},{k:'Reporté',c:'#6b7280'}];
+const S_CMD  = [{k:'Processing',c:'#f97316'},{k:'En Att',c:'#f59e0b'},{k:'Confirmé',c:'#3b82f6'},{k:'Activé',c:'#22c55e'},{k:'Livré',c:'#14b8a6'},{k:'Payé',c:'#a855f7'},{k:'Reporté',c:'#6b7280'},{k:'Annullé',c:'#ef4444'}];
 const S_TKT  = [{k:'NV',c:'#f59e0b'},{k:'En cours',c:'#3b82f6'},{k:'Résolu',c:'#22c55e'},{k:'Annullé',c:'#ef4444'}];
 const S_PRS  = [{k:'Prospect',c:'#a855f7'},{k:'Contacté',c:'#3b82f6'},{k:'Intéressé',c:'#f59e0b'},{k:'Converti',c:'#22c55e'},{k:'Perdu',c:'#ef4444'}];
 const S_TASK = [{k:'NV',c:'#f59e0b'},{k:'En cours',c:'#3b82f6'},{k:'Terminé',c:'#22c55e'}];
@@ -1056,15 +1056,19 @@ function renderPrs() {
 }
 
 function renderCaisse() {
-  const allM = CAISSE.map(r=>parseFloat(r.Montant||0));
-  const solde = allM.reduce((s,v)=>s+v,0);
-  const ent   = allM.filter(v=>v>0).reduce((s,v)=>s+v,0);
-  const sor   = Math.abs(allM.filter(v=>v<0).reduce((s,v)=>s+v,0));
+  const today = new Date().toISOString().split('T')[0];
+  const todayRows = CAISSE.filter(r => fmtDate(r.Date||r.date||'') === today);
+  const allM   = CAISSE.map(r=>parseFloat(r.Montant||0));
+  const todayM = todayRows.map(r=>parseFloat(r.Montant||0));
+  const solde  = allM.reduce((s,v)=>s+v,0);
+  const entT   = todayM.filter(v=>v>0).reduce((s,v)=>s+v,0);
+  const sorT   = Math.abs(todayM.filter(v=>v<0).reduce((s,v)=>s+v,0));
+  const opsT   = todayRows.length;
   $('caisse-stats').innerHTML = `
-    <div class="scard"><div class="slbl">💰 Solde</div><div class="sval ${solde>=0?'cgreen':'cred'}">${fmtN(solde)} DA</div></div>
-    <div class="scard"><div class="slbl">📥 Entrées</div><div class="sval cgreen">${fmtN(ent)} DA</div></div>
-    <div class="scard"><div class="slbl">📤 Sorties</div><div class="sval cred">${fmtN(sor)} DA</div></div>
-    <div class="scard"><div class="slbl">📋 Opérations</div><div class="sval cblue">${CAISSE.length}</div></div>`;
+    <div class="scard"><div class="slbl">💰 Solde actuel</div><div class="sval ${solde>=0?'cgreen':'cred'}">${fmtN(solde)} DA</div></div>
+    <div class="scard"><div class="slbl">📥 Entrées aujourd'hui</div><div class="sval cgreen">${fmtN(entT)} DA</div></div>
+    <div class="scard"><div class="slbl">📤 Sorties aujourd'hui</div><div class="sval cred">${fmtN(sorT)} DA</div></div>
+    <div class="scard"><div class="slbl">📋 Opérations aujourd'hui</div><div class="sval cblue">${opsT}</div></div>`;
 
   const q = gv('f-ca-q'); const tf = gv('f-ca-t');
   let data = [...CAISSE].reverse();
@@ -1236,14 +1240,43 @@ function getPickedStatus() {
 }
 
 function cvtType(t) {
-  $('f1-type').value = t;
-  $('f1-title').textContent = 'Convertir → ' + t;
-  f1StatusList = t==='TICKET' ? S_TKT : t==='PROSPECTION' ? S_PRS : S_CMD;
-  renderStatusPills(f1StatusList[0].k);
-  $('cvt-cmd').style.display=t==='COMMANDE'?'none':'inline-flex';
-  $('cvt-tkt').style.display=t==='TICKET'?'none':'inline-flex';
-  $('cvt-prs').style.display=t==='PROSPECTION'?'none':'inline-flex';
-  toast('Convertir → '+t+' (sauvegarder pour confirmer)','w');
+  // Convert = create a NEW row of type t, keep original unchanged
+  const ri = $('f1-ri').value;
+  if (!ri) { toast('Ouvrez d\'abord un enregistrement','e'); return; }
+  const riInt = parseInt(ri);
+  const orig = F1.find(x => parseInt(x._rowIndex) === riInt);
+  if (!orig) { toast('Enregistrement introuvable','e'); return; }
+
+  if (!confirm('Créer un nouveau ' + t + ' basé sur cette entrée ? L\'original sera conservé.')) return;
+
+  // Build new row from original data, change TYPE and reset status
+  const newStatuses = t==='TICKET' ? S_TKT : t==='PROSPECTION' ? S_PRS : S_CMD;
+  const row = {
+    TYPE:              t,
+    Client:            orig.Client||orig.client||'',
+    Téléphone:         orig.Téléphone||orig.Telephone||'',
+    Wilaya:            orig.Wilaya||orig.wilaya||'',
+    Commune:           orig.Commune||orig.commune||'',
+    Produit:           orig.Produit||orig.produit||'',
+    'Prix Produit':    orig['Prix Produit']||0,
+    'Tarif Livraison': orig['Tarif Livraison']||0,
+    Total:             orig.Total||orig.total||0,
+    Statu:             newStatuses[0].k,
+    commercial:        orig.commercial||orig.Commercial||'',
+    technicien:        orig.technicien||'',
+    Note:              orig.Note||orig.note||'',
+    Date:              new Date().toISOString().split('T')[0],
+  };
+
+  call('addOrder', {row}).then(res => {
+    if (res.ok) {
+      toast(t + ' créé avec succès ✓', 's');
+      closeOv('ov-f1');
+      loadF1();
+    } else {
+      toast(res.error||'Erreur', 'e');
+    }
+  });
 }
 
 function calcF1() {
