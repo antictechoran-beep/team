@@ -606,6 +606,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem"><input type="checkbox" id="ua-stk"/> Stock</label>
       <label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem"><input type="checkbox" id="ua-cai"/> Caisse</label>
       <label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem"><input type="checkbox" id="ua-del"/> Supprimer</label>
+      <label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem;grid-column:1/-1;margin-top:.3rem;padding:.4rem .5rem;background:var(--bg3);border-radius:6px;border:1px solid var(--bd)"><input type="checkbox" id="ua-obj"/> 👁 Voir toutes les opérations (Ticket/Task/Prospection)</label>
     </div>
   </div>
   <div class="mf">
@@ -832,17 +833,17 @@ function renderTDB() {
       data: F1.filter(r => typ(r)==='COMMANDE' && ((r.Statu||r.statu||'').toLowerCase()==='processing' || isToday(r.Date||r.date))),
       render: r => cardF1(r), add: "openModalF1(null,'COMMANDE')", show: canAccess('cmd') },
     { label:'TICKET IT',   icon:'🎫', color:'#f97316',
-      data: F1.filter(r => typ(r)==='TICKET' && (['nv','en cours'].includes((r.Statu||'').toLowerCase()) || isToday(r.Date||r.date))).filter(r => CU.type==='admin' || String(r.technicien||r.commercial||'').trim().toUpperCase()===CU.nom.toUpperCase()),
+      data: F1.filter(r => typ(r)==='TICKET' && (['nv','en cours'].includes((r.Statu||'').toLowerCase()) || isToday(r.Date||r.date))).filter(r => CU.type==='admin' || String(CU.acces_obj||'no').toLowerCase()==='yes' || String(r.technicien||r.commercial||'').trim().toUpperCase()===CU.nom.toUpperCase()),
       render: r => cardF1(r), add: "openModalF1(null,'TICKET')", show: canAccess('tkt') },
     { label:'TASK',        icon:'✅', color:'#a855f7',
-      data: TASKS.filter(r => { const p=(r.progression||'NV').toLowerCase(); return (p==='nv'||p==='en cours'||isToday(r.date)) && (CU.type==='admin'||String(r.attribuer||'').trim().toUpperCase()===CU.nom.toUpperCase()); }),
+      data: TASKS.filter(r => { const p=(r.progression||'NV').toLowerCase(); return (p==='nv'||p==='en cours'||isToday(r.date)) && (CU.type==='admin'||String(CU.acces_obj||'no').toLowerCase()==='yes'||String(r.attribuer||'').trim().toUpperCase()===CU.nom.toUpperCase()); }),
       render: r => cardTask(r), add: "openModalTask(null)", show: canAccess('task') },
     { label:'CAISSE',      icon:'💰', color:'#22c55e',
       data: CAISSE.filter(r => isToday(r.Date||r.date)),
       render: r => cardCaisse(r), add: "openModalCaisse(null)", show: canAccess('caisse'),
       extra: `<div style="font-size:.7rem;color:#4ade80;font-weight:700;margin-top:.2rem">Solde: ${fmtN(solde)} DA</div>` },
     { label:'PROSPECTION', icon:'🎯', color:'#ec4899',
-      data: F1.filter(r => typ(r)==='PROSPECTION' && isToday(r.Date||r.date) && (CU.type==='admin'||String(r.commercial||'').trim().toUpperCase()===CU.nom.toUpperCase())),
+      data: F1.filter(r => typ(r)==='PROSPECTION' && isToday(r.Date||r.date) && (CU.type==='admin'||String(CU.acces_obj||'no').toLowerCase()==='yes'||String(r.commercial||'').trim().toUpperCase()===CU.nom.toUpperCase())),
       render: r => cardF1(r), add: "openModalF1(null,'PROSPECTION')", show: canAccess('prs') },
   ];
 
@@ -1007,7 +1008,7 @@ function renderCmd() {
 function renderTkt() {
   let src = F1.filter(r => typ(r)==='TICKET');
   // user sees only their tickets
-  if (CU && CU.type !== 'admin') {
+  if (CU && CU.type !== 'admin' && String(CU.acces_obj||'no').toLowerCase() !== 'yes') {
     src = src.filter(r => {
       const t = String(r.technicien||r.Technicien||'').trim().toUpperCase();
       const co = String(r.commercial||r.Commercial||'').trim().toUpperCase();
@@ -1023,7 +1024,7 @@ function renderTkt() {
 function renderTask() {
   let src = [...TASKS];
   // user sees only tasks assigned to them
-  if (CU && CU.type !== 'admin') {
+  if (CU && CU.type !== 'admin' && String(CU.acces_obj||'no').toLowerCase() !== 'yes') {
     src = src.filter(r => {
       const a = String(r.attribuer||'').trim().toUpperCase();
       const co = String(r.commercial||'').trim().toUpperCase();
@@ -1042,7 +1043,7 @@ function renderTask() {
 function renderPrs() {
   let src = F1.filter(r => typ(r)==='PROSPECTION');
   // user sees only their prospects
-  if (CU && CU.type !== 'admin') {
+  if (CU && CU.type !== 'admin' && String(CU.acces_obj||'no').toLowerCase() !== 'yes') {
     src = src.filter(r => {
       const co = String(r.commercial||r.Commercial||'').trim().toUpperCase();
       const te = String(r.technicien||'').trim().toUpperCase();
@@ -1484,7 +1485,7 @@ function openModalUser(i) {
   const accs = {
     'ua-cmd':'acces_commande','ua-tkt':'acces_ticket','ua-task':'acces_task',
     'ua-prs':'acces_prosp','ua-cli':'acces_clients','ua-stk':'acces_stock',
-    'ua-cai':'acces_caisse','ua-del':'delete'
+    'ua-cai':'acces_caisse','ua-del':'delete','ua-obj':'acces_obj'
   };
   Object.entries(accs).forEach(([id,f]) => { $(id).checked = String(u[f]||'yes').toLowerCase() !== 'no'; });
   openOv('ov-user');
@@ -1500,7 +1501,7 @@ async function saveUser() {
   const accs = {
     'ua-cmd':'acces_commande','ua-tkt':'acces_ticket','ua-task':'acces_task',
     'ua-prs':'acces_prosp','ua-cli':'acces_clients','ua-stk':'acces_stock',
-    'ua-cai':'acces_caisse','ua-del':'delete'
+    'ua-cai':'acces_caisse','ua-del':'delete','ua-obj':'acces_obj'
   };
   const row = { NOM:nom, APPARTEMENT:$('user-dept').value.trim(), type:$('user-type').value };
   Object.entries(accs).forEach(([id,f]) => { row[f] = $(id).checked?'yes':'no'; });
