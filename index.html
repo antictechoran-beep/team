@@ -531,7 +531,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
 // ════════════════════════════════════════════════════════
 // CONFIG
 // ════════════════════════════════════════════════════════
-const API = 'https://script.google.com/macros/s/AKfycbxBL0HK3M-rnBkUoj6P1nWTX_uW8v1RsM2P4GsdVFBJCwL6ZrMFy0e0AWDlk4Vc14uV/exec';
+const API = 'https://script.google.com/macros/s/AKfycbxP1yxQeNwgVEdm5hbX9SFE-duQ6cFFhmQeLvbTnn-X-BmhlTNQsYJ5ug1G-cwU0Alz/exec';
 
 // ════════════════════════════════════════════════════════
 // STATE
@@ -554,16 +554,32 @@ const ACC_MAP = {cmd:'acces_commande',tkt:'acces_ticket',task:'acces_task',prs:'
 async function call(action, body) {
   dot('spin');
   try {
-    let res;
-    if (!body) {
-      res = await fetch(API + '?action=' + encodeURIComponent(action));
-    } else if (action === 'getSheet') {
-      res = await fetch(API + '?action=getSheet&sheet=' + encodeURIComponent(body.sheet));
+    let url, res;
+    // GET-only actions (read)
+    const GET_ACTIONS = ['getSheets','getSheet','getUsers'];
+    if (GET_ACTIONS.includes(action)) {
+      const p = new URLSearchParams({action});
+      if (body) Object.keys(body).forEach(k => p.set(k, body[k]));
+      res = await fetch(API + '?' + p.toString());
     } else {
-      res = await fetch(API, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action, ...body})});
+      // Write actions: POST with JSON body
+      // Apps Script does a redirect, so we send data BOTH in URL params AND body
+      // This ensures data survives the redirect
+      const payload = JSON.stringify({action, ...(body||{})});
+      url = API + '?action=' + encodeURIComponent(action);
+      if (body && body.rowIndex !== undefined) {
+        url += '&rowIndex=' + encodeURIComponent(body.rowIndex);
+      }
+      res = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain'},
+        body: payload
+      });
     }
     const text = await res.text();
-    const d = JSON.parse(text);
+    let d;
+    try { d = JSON.parse(text); }
+    catch(e) { throw new Error('Réponse invalide: ' + text.substring(0,100)); }
     dot(d.ok ? 'ok' : 'err');
     return d;
   } catch(e) {
