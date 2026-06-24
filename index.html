@@ -607,6 +607,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem"><input type="checkbox" id="ua-cai"/> Caisse</label>
       <label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem"><input type="checkbox" id="ua-del"/> Supprimer</label>
       <label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem;grid-column:1/-1;margin-top:.3rem;padding:.4rem .5rem;background:var(--bg3);border-radius:6px;border:1px solid var(--bd)"><input type="checkbox" id="ua-obj"/> 👁 Voir toutes les opérations (Ticket/Task/Prospection)</label>
+      <label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem;grid-column:1/-1;padding:.4rem .5rem;background:var(--bg3);border-radius:6px;border:1px solid var(--bd)"><input type="checkbox" id="ua-tbd"/> 📊 Accès Table de Bord</label>
     </div>
   </div>
   <div class="mf">
@@ -737,6 +738,11 @@ function startApp() {
       if (el) el.style.display = 'none';
     }
   });
+  // Hide TDB nav if no TABLE_BORD access
+  if (CU.type !== 'admin' && String(CU.TABLE_BORD||'yes').toLowerCase() === 'no') {
+    const el = $('na-tdb'); if (el) el.style.display = 'none';
+    const mel = document.getElementById('mn-tdb'); if (mel) mel.style.display = 'none';
+  }
   loadAll();
 }
 
@@ -761,6 +767,10 @@ function goPage(p) {
   // Access check
   if (ACC_MAP[p] && CU.type !== 'admin' && String(CU[ACC_MAP[p]]||'').toLowerCase() === 'no') {
     toast('Accès refusé', 'e'); return;
+  }
+  // TABLE_BORD access check
+  if (p === 'tdb' && CU.type !== 'admin' && String(CU.TABLE_BORD||'yes').toLowerCase() === 'no') {
+    toast('Accès au Table de Bord refusé', 'e'); return;
   }
   document.querySelectorAll('.page').forEach(x => x.classList.remove('on'));
   document.querySelectorAll('.nav-a').forEach(x => x.classList.remove('on'));
@@ -800,7 +810,13 @@ async function loadAll() {
   if (ru.ok)  USERS   = ru.users;
   fillUserSelects();
   updateBadges();
-  goPage(curPage);
+  // If user has no TDB access, go to first allowed page
+  let startPage = curPage;
+  if (curPage === 'tdb' && CU.type !== 'admin' && String(CU.TABLE_BORD||'yes').toLowerCase() === 'no') {
+    const pages = ['cmd','tkt','task','prs','caisse','clients','stock'];
+    startPage = pages.find(p => !ACC_MAP[p] || String(CU[ACC_MAP[p]]||'yes').toLowerCase() !== 'no') || 'cmd';
+  }
+  goPage(startPage);
 }
 
 async function loadF1()     { showL('Chargement...'); const r=await call('getSheet',{sheet:'Feuille 1'}); hideL(); if(r.ok){F1=r.rows;updateBadges();goPage(curPage);} }
@@ -1485,7 +1501,7 @@ function openModalUser(i) {
   const accs = {
     'ua-cmd':'acces_commande','ua-tkt':'acces_ticket','ua-task':'acces_task',
     'ua-prs':'acces_prosp','ua-cli':'acces_clients','ua-stk':'acces_stock',
-    'ua-cai':'acces_caisse','ua-del':'delete','ua-obj':'acces_obj'
+    'ua-cai':'acces_caisse','ua-del':'delete','ua-obj':'acces_obj','ua-tbd':'TABLE_BORD'
   };
   Object.entries(accs).forEach(([id,f]) => { $(id).checked = String(u[f]||'yes').toLowerCase() !== 'no'; });
   openOv('ov-user');
@@ -1501,7 +1517,7 @@ async function saveUser() {
   const accs = {
     'ua-cmd':'acces_commande','ua-tkt':'acces_ticket','ua-task':'acces_task',
     'ua-prs':'acces_prosp','ua-cli':'acces_clients','ua-stk':'acces_stock',
-    'ua-cai':'acces_caisse','ua-del':'delete','ua-obj':'acces_obj'
+    'ua-cai':'acces_caisse','ua-del':'delete','ua-obj':'acces_obj','ua-tbd':'TABLE_BORD'
   };
   const row = { NOM:nom, APPARTEMENT:$('user-dept').value.trim(), type:$('user-type').value };
   Object.entries(accs).forEach(([id,f]) => { row[f] = $(id).checked?'yes':'no'; });
