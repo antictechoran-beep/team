@@ -139,15 +139,16 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
 .mob-menu-item.on{background:var(--bg3);color:var(--blue);border-right:3px solid var(--blue)}
 .mob-menu-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.6rem;padding:.05rem .35rem;border-radius:8px;font-weight:700}
 /* Three-dots button in topbar */
-.mob-dots-btn{display:none;background:none;border:1px solid var(--bd);color:var(--text);border-radius:8px;padding:.3rem .65rem;cursor:pointer;font-size:1.1rem;line-height:1}
-.mob-dots-btn:hover{border-color:var(--blue);color:var(--blue)}
+.mob-dots-btn{display:none;background:var(--blue);border:none;color:#fff;border-radius:8px;padding:.45rem .65rem;cursor:pointer;line-height:1;align-items:center;justify-content:center}
+.mob-dots-btn:hover{background:#2563eb}
+.mob-dots-btn:active{transform:scale(.95)}
 
 /* ── RESPONSIVE ── */
 @media (max-width: 700px) {
   /* Hide desktop sidebar */
   .sidebar { display: none !important; }
   /* Show dots button */
-  .mob-dots-btn { display: block !important; }
+  .mob-dots-btn { display: flex !important; }
   /* Hide logout text on mobile, keep dots */
   #tb-logout { display: none !important; }
   /* Content takes full width */
@@ -155,9 +156,9 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
   .content { padding-bottom: 16px; }
   .page { padding: .75rem; }
   /* Topbar compact */
-  .topbar { padding: 0 .75rem; height: 46px; }
-  .tb-brand { font-size: .85rem; }
-  .tb-r { gap: .4rem; font-size: .75rem; }
+  .topbar { padding: 0 .75rem; height: 50px; }
+  .tb-brand { font-size: .82rem; }
+  .tb-r { gap: .5rem; font-size: .75rem; }
   /* Kanban: full width columns on mobile */
   .kboard { height: calc(100vh - 46px - 7rem); }
   .kcol { width: 200px; }
@@ -267,7 +268,13 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <span id="tbuser">—</span>
       <span class="tb-role" id="tbrole" style="display:none">ADMIN</span>
       <button class="btn-out" onclick="doLogout()" id="tb-logout">Déconnexion</button>
-      <button class="mob-dots-btn" id="mob-dots-btn" onclick="toggleMobMenu()">⋯</button>
+      <button class="mob-dots-btn" id="mob-dots-btn" onclick="toggleMobMenu()">
+        <span style="display:flex;flex-direction:column;gap:4px;pointer-events:none">
+          <span style="display:block;width:20px;height:2px;background:currentColor;border-radius:2px"></span>
+          <span style="display:block;width:20px;height:2px;background:currentColor;border-radius:2px"></span>
+          <span style="display:block;width:20px;height:2px;background:currentColor;border-radius:2px"></span>
+        </span>
+      </button>
     </div>
   </div>
   <div class="body">
