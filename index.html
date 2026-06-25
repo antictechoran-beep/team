@@ -248,7 +248,12 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
     <p>Système de gestion</p>
     <input id="lgu" type="text" placeholder="Utilisateur" autocomplete="off"/>
     <input id="lgp" type="password" placeholder="Mot de passe"/>
+    <label style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--dim);cursor:pointer;margin:.1rem 0 .5rem">
+      <input type="checkbox" id="lg-remember" checked style="accent-color:var(--blue)"/> Se souvenir de moi
+    </label>
     <button id="lgbtn" onclick="doLogin()">Connexion</button>
+    <button id="lgbtn-auto" onclick="doAutoLogin()" style="display:none;width:100%;background:var(--bg3);color:var(--text);border:1px solid var(--bd);border-radius:8px;padding:.75rem;font-size:.9rem;cursor:pointer;font-family:var(--font);margin-top:.5rem"></button>
+    <button id="lgbtn-clear" onclick="clearSaved()" style="display:none;background:none;border:none;color:var(--dim);font-size:.75rem;cursor:pointer;margin-top:.3rem;font-family:var(--font)">🗑 Oublier mes informations</button>
     <div id="lerr"></div>
   </div>
 </div>
@@ -713,8 +718,65 @@ function dot(s) {
 // ════════════════════════════════════════════════════════
 // AUTH
 // ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════
+// AUTO LOGIN
+// ════════════════════════════════════════════════════════
+const LS_KEY = 'antic_saved_user';
+
+function initLogin() {
+  const saved = getSaved();
+  if (saved) {
+    // Show auto-login button
+    const btn = $('lgbtn-auto');
+    const clr = $('lgbtn-clear');
+    if (btn) {
+      btn.style.display = 'block';
+      btn.innerHTML = '⚡ Continuer en tant que <strong>' + saved.nom + '</strong>';
+    }
+    if (clr) clr.style.display = 'block';
+    // Pre-fill fields
+    $('lgu').value = saved.nom;
+    $('lgp').value = saved.pass;
+    // Focus on auto-login button
+    setTimeout(() => { if (btn) btn.focus(); }, 100);
+  }
+}
+
+function getSaved() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(_) { return null; }
+}
+
+function saveCredentials(nom, pass) {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ nom, pass }));
+  } catch(_) {}
+}
+
+function clearSaved() {
+  localStorage.removeItem(LS_KEY);
+  $('lgbtn-auto').style.display = 'none';
+  $('lgbtn-clear').style.display = 'none';
+  $('lgu').value = '';
+  $('lgp').value = '';
+  $('lgu').focus();
+}
+
+async function doAutoLogin() {
+  const saved = getSaved();
+  if (!saved) return;
+  $('lgu').value = saved.nom;
+  $('lgp').value = saved.pass;
+  await doLogin();
+}
+
 document.getElementById('lgp').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 document.getElementById('lgu').addEventListener('keydown', e => { if(e.key==='Enter') $('lgp').focus(); });
+document.getElementById('lgbtn-auto')?.addEventListener('keydown', e => { if(e.key==='Enter') doAutoLogin(); });
+// Init on page load
+initLogin();
 
 async function doLogin() {
   const u = $('lgu').value.trim().toUpperCase();
@@ -733,7 +795,14 @@ async function doLogin() {
     if (!found) { $('lerr').textContent = 'Identifiants incorrects'; return; }
     CU = { nom: found.NOM||found.nom, type: found.type||'user', dept: found.APPARTEMENT||'' };
     // copy access fields
-    Object.keys(found).forEach(k => { if (k.startsWith('acces') || k==='delete' || k==='modif') CU[k] = found[k]; });
+    Object.keys(found).forEach(k => { if (k.startsWith('acces') || k==='delete' || k==='modif' || k==='TABLE_BORD') CU[k] = found[k]; });
+    // Save credentials if remember is checked
+    const rememberCb = document.getElementById('lg-remember');
+    if (!rememberCb || rememberCb.checked) {
+      saveCredentials(u, p);
+    } else {
+      localStorage.removeItem(LS_KEY);
+    }
     startApp();
   } catch(e) {
     $('lerr').textContent = 'Erreur: ' + e.message;
@@ -774,7 +843,8 @@ function doLogout() {
   $('tbrole').style.display = 'none';
   $('na-users').style.display = 'none';
   $('ag').style.display = 'none';
-  $('lgu').value = ''; $('lgp').value = '';
+  // Re-init login screen with saved credentials
+  initLogin();
   Object.keys(ACC_MAP).forEach(p => { const el=$('na-'+p); if(el) el.style.display='flex'; });
   const mmu = document.getElementById('mm-users');
   if (mmu) mmu.style.display = 'none';
