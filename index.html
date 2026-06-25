@@ -124,8 +124,17 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
 
 /* ── MOBILE NAV (bottom bar) ── */
 /* Call button - mobile only */
-.call-btn-mob{display:none;align-items:center;justify-content:center;background:#22c55e;color:#fff;border-radius:7px;padding:.45rem .7rem;font-size:1rem;text-decoration:none;flex-shrink:0}
+.call-btn-mob{display:none;align-items:center;justify-content:center;background:#22c55e;color:#fff;border-radius:7px;padding:.3rem .55rem;font-size:.85rem;text-decoration:none;flex-shrink:0;width:36px;height:36px}
 @media (max-width:700px){.call-btn-mob{display:flex}}
+
+/* Hamburger in topbar */
+.mob-ham-btn{display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:7px;width:38px;height:38px;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:0;flex-shrink:0}
+.mob-ham-btn:hover{background:rgba(255,255,255,.25)}
+@media (max-width:700px){
+  .mob-ham-btn{display:flex}
+  #tb-logout{display:none}
+  .sdot{display:none}
+}
 
 /* ── MOBILE MENU (drawer) ── */
 .mob-menu{display:none;position:fixed;top:0;right:0;bottom:0;width:80%;max-width:280px;background:var(--bg2);border-left:1px solid var(--bd);z-index:600;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,.5);transform:translateX(100%);transition:transform .25s ease}
@@ -157,7 +166,9 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
   #tb-logout { display: none !important; }
   /* Content takes full width */
   .body { flex-direction: column; }
-  .content { padding-bottom: 16px; }
+  .content { padding-bottom: 16px; padding-top: 0; }
+  /* Page header z-index above topbar */
+  .ph { position: relative; z-index: 1; }
   .page { padding: .75rem; }
   /* Topbar compact */
   .topbar { padding: 0 .75rem; height: 50px; }
@@ -272,7 +283,11 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <span id="tbuser">—</span>
       <span class="tb-role" id="tbrole" style="display:none">ADMIN</span>
       <button class="btn-out" onclick="doLogout()" id="tb-logout">Déconnexion</button>
-
+      <button id="mob-dots-btn" onclick="toggleMobMenu()" class="mob-ham-btn">
+        <span style="display:block;width:18px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
+        <span style="display:block;width:18px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
+        <span style="display:block;width:18px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
+      </button>
     </div>
   </div>
   <div class="body">
@@ -486,11 +501,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
     </div>
   </div>
   <div class="mob-backdrop" id="mob-backdrop" onclick="closeMobMenu()"></div>
-  <button id="mob-dots-btn" onclick="toggleMobMenu()" style="position:fixed;top:7px;right:10px;z-index:500;background:#3b82f6;border:none;color:#fff;border-radius:8px;width:42px;height:42px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;padding:0">
-    <span style="display:block;width:20px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
-    <span style="display:block;width:20px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
-    <span style="display:block;width:20px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
-  </button>
+
 </div><!-- app -->
 
 <!-- MODAL F1 (Commande / Ticket / Prospection) -->
@@ -799,18 +810,7 @@ document.getElementById('lgu').addEventListener('keydown', e => { if(e.key==='En
 document.getElementById('lgbtn-auto')?.addEventListener('keydown', e => { if(e.key==='Enter') doAutoLogin(); });
 // Init on page load
 initLogin();
-// Hide hamburger on desktop
-(function(){
-  const btn = document.getElementById('mob-dots-btn');
-  if (!btn) return;
-  const isMob = window.innerWidth <= 700 || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-  if (!isMob) btn.style.display = 'none';
-  // Also handle sidebar visibility
-  window.addEventListener('resize', function(){
-    const mob = window.innerWidth <= 700;
-    if (btn) btn.style.display = mob ? 'flex' : 'none';
-  });
-})();
+
 
 async function doLogin() {
   const u = $('lgu').value.trim().toUpperCase();
