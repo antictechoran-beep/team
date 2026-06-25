@@ -123,29 +123,36 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
 
 
 /* ── MOBILE NAV (bottom bar) ── */
-.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--bd);z-index:200;height:62px;padding:0}
-.mob-nav-inner{display:flex;height:100%}
-.mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--dim);font-size:.65rem;font-weight:500;gap:3px;border:none;background:none;font-family:var(--font);padding:.35rem 0;position:relative;transition:.12s;min-width:0}
-.mob-nav-item.on{color:var(--blue)}
-.mob-nav-item.on .ico{transform:scale(1.1)}
-.mob-nav-item .ico{font-size:1.35rem;line-height:1;transition:.12s}
-.mob-nav-badge{position:absolute;top:3px;right:calc(50% - 16px);background:var(--red);color:#fff;font-size:.52rem;padding:.06rem .32rem;border-radius:8px;font-weight:700;min-width:15px;text-align:center}
-.mob-more-btn{position:fixed;bottom:70px;right:.85rem;background:var(--blue);color:#fff;width:46px;height:46px;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:1.5rem;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(59,130,246,.4);z-index:199;line-height:1}
-.mob-menu{display:none;position:fixed;bottom:124px;right:.85rem;background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:.5rem;z-index:300;min-width:170px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
-.mob-menu.open{display:block}
-.mob-menu-item{display:flex;align-items:center;gap:.6rem;padding:.65rem .85rem;color:var(--text);font-size:.88rem;cursor:pointer;border-radius:8px;transition:.1s}
-.mob-menu-item:hover,.mob-menu-item.on{background:var(--bg3);color:var(--blue)}
+/* ── MOBILE MENU (drawer) ── */
+.mob-menu{display:none;position:fixed;top:0;right:0;bottom:0;width:80%;max-width:280px;background:var(--bg2);border-left:1px solid var(--bd);z-index:600;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,.5);transform:translateX(100%);transition:transform .25s ease}
+.mob-menu.open{display:flex;transform:translateX(0)}
+.mob-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:599}
+.mob-backdrop.open{display:block}
+.mob-menu-head{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--bd);flex-shrink:0}
+.mob-menu-brand{font-weight:800;color:var(--blue);font-size:.95rem}
+.mob-menu-close{background:none;border:none;color:var(--dim);font-size:1.4rem;cursor:pointer;line-height:1;padding:.2rem .4rem}
+.mob-menu-close:hover{color:var(--red)}
+.mob-menu-body{overflow-y:auto;flex:1;padding:.5rem 0}
+.mob-menu-sep{padding:.5rem 1rem .25rem;font-size:.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-top:.3rem}
+.mob-menu-item{display:flex;align-items:center;gap:.65rem;padding:.72rem 1rem;color:var(--text);font-size:.9rem;cursor:pointer;transition:.1s;position:relative}
+.mob-menu-item:hover{background:var(--bg3);color:var(--blue)}
+.mob-menu-item.on{background:var(--bg3);color:var(--blue);border-right:3px solid var(--blue)}
+.mob-menu-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.6rem;padding:.05rem .35rem;border-radius:8px;font-weight:700}
+/* Three-dots button in topbar */
+.mob-dots-btn{display:none;background:none;border:1px solid var(--bd);color:var(--text);border-radius:8px;padding:.3rem .65rem;cursor:pointer;font-size:1.1rem;line-height:1}
+.mob-dots-btn:hover{border-color:var(--blue);color:var(--blue)}
 
 /* ── RESPONSIVE ── */
 @media (max-width: 700px) {
   /* Hide desktop sidebar */
   .sidebar { display: none !important; }
-  /* Show mobile nav */
-  .mob-nav { display: flex !important; }
-  .mob-more-btn { display: flex !important; }
-  /* Content takes full width, add bottom padding for nav bar */
+  /* Show dots button */
+  .mob-dots-btn { display: block !important; }
+  /* Hide logout text on mobile, keep dots */
+  #tb-logout { display: none !important; }
+  /* Content takes full width */
   .body { flex-direction: column; }
-  .content { padding-bottom: 66px; }
+  .content { padding-bottom: 16px; }
   .page { padding: .75rem; }
   /* Topbar compact */
   .topbar { padding: 0 .75rem; height: 46px; }
@@ -254,7 +261,8 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <div class="sdot" id="sdot"></div>
       <span id="tbuser">—</span>
       <span class="tb-role" id="tbrole" style="display:none">ADMIN</span>
-      <button class="btn-out" onclick="doLogout()">Déconnexion</button>
+      <button class="btn-out" onclick="doLogout()" id="tb-logout">Déconnexion</button>
+      <button class="mob-dots-btn" id="mob-dots-btn" onclick="toggleMobMenu()">⋯</button>
     </div>
   </div>
   <div class="body">
@@ -444,42 +452,30 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
     </div><!-- content -->
   </div><!-- body -->
 
-  <!-- MOBILE BOTTOM NAV -->
-  <div class="mob-nav" id="mob-nav">
-    <div class="mob-nav-inner">
-      <button class="mob-nav-item on" id="mn-tdb" onclick="goPage('tdb');mobNav('tdb')">
-        <span class="ico">📊</span><span>Bord</span>
-      </button>
-      <button class="mob-nav-item" id="mn-cmd" onclick="goPage('cmd');mobNav('cmd')">
-        <span class="ico">📦</span><span>Cmde</span>
-        <span class="mob-nav-badge" id="mnb-cmd" style="display:none"></span>
-      </button>
-      <button class="mob-nav-item" id="mn-tkt" onclick="goPage('tkt');mobNav('tkt')">
-        <span class="ico">🎫</span><span>Ticket</span>
-        <span class="mob-nav-badge" id="mnb-tkt" style="display:none"></span>
-      </button>
-      <button class="mob-nav-item" id="mn-task" onclick="goPage('task');mobNav('task')">
-        <span class="ico">✅</span><span>Task</span>
-        <span class="mob-nav-badge" id="mnb-task" style="display:none"></span>
-      </button>
-      <button class="mob-nav-item" id="mn-caisse" onclick="goPage('caisse');mobNav('caisse')">
-        <span class="ico">💰</span><span>Caisse</span>
-      </button>
+    <!-- MOBILE MENU DRAWER -->
+  <div class="mob-menu" id="mob-menu">
+    <div class="mob-menu-head">
+      <div class="mob-menu-brand">⚡ ANTIC TECH TEAM</div>
+      <button class="mob-menu-close" onclick="closeMobMenu()">×</button>
+    </div>
+    <div class="mob-menu-body">
+      <div class="mob-menu-item" onclick="goPage('tdb');closeMobMenu()">📊 <span>Table de Bord</span></div>
+      <div class="mob-menu-sep">Activités</div>
+      <div class="mob-menu-item" id="mm-cmd" onclick="goPage('cmd');closeMobMenu()">📦 <span>Commande</span><span class="mob-menu-badge" id="mnb-cmd" style="display:none"></span></div>
+      <div class="mob-menu-item" id="mm-tkt" onclick="goPage('tkt');closeMobMenu()">🎫 <span>Ticket IT</span><span class="mob-menu-badge" id="mnb-tkt" style="display:none"></span></div>
+      <div class="mob-menu-item" id="mm-task" onclick="goPage('task');closeMobMenu()">✅ <span>Task</span><span class="mob-menu-badge" id="mnb-task" style="display:none"></span></div>
+      <div class="mob-menu-item" id="mm-prs" onclick="goPage('prs');closeMobMenu()">🎯 <span>Prospection</span></div>
+      <div class="mob-menu-sep">Gestion</div>
+      <div class="mob-menu-item" id="mm-caisse" onclick="goPage('caisse');closeMobMenu()">💰 <span>Caisse</span></div>
+      <div class="mob-menu-item" id="mm-clients" onclick="goPage('clients');closeMobMenu()">👥 <span>Clients</span></div>
+      <div class="mob-menu-item" id="mm-stock" onclick="goPage('stock');closeMobMenu()">📦 <span>Stock</span></div>
+      <div class="mob-menu-sep" id="mm-sep-admin" style="display:none">Admin</div>
+      <div class="mob-menu-item" id="mm-users" onclick="goPage('users');closeMobMenu()" style="display:none">👤 <span>Utilisateurs</span></div>
+      <div class="mob-menu-sep"></div>
+      <div class="mob-menu-item" onclick="doLogout();closeMobMenu()" style="color:var(--red)">🚪 <span>Déconnexion</span></div>
     </div>
   </div>
-
-  <!-- MORE menu button -->
-  <button class="mob-more-btn" id="mob-more-btn" onclick="toggleMobMenu()">⋯</button>
-
-  <!-- MORE menu -->
-  <div class="mob-menu" id="mob-menu">
-    <div class="mob-menu-item" id="mm-prs" onclick="goPage('prs');mobNav('prs');closeMobMenu()">🎯 Prospection</div>
-    <div class="mob-menu-item" id="mm-clients" onclick="goPage('clients');closeMobMenu()">👥 Clients</div>
-    <div class="mob-menu-item" id="mm-stock" onclick="goPage('stock');closeMobMenu()">📦 Stock</div>
-    <div class="mob-menu-item" id="mm-users" onclick="goPage('users');closeMobMenu()" style="display:none">👤 Utilisateurs</div>
-  </div>
-
-
+  <div class="mob-backdrop" id="mob-backdrop" onclick="closeMobMenu()"></div>
 </div><!-- app -->
 
 <!-- MODAL F1 (Commande / Ticket / Prospection) -->
@@ -754,8 +750,7 @@ function startApp() {
     $('tbrole').style.display = 'inline-block';
     $('na-users').style.display = 'flex';
     $('ag').style.display = 'block';
-    const mmu = document.getElementById('mm-users');
-    if (mmu) mmu.style.display = 'flex';
+    showMobAdminItems();
   }
   // hide nav items based on access
   Object.entries(ACC_MAP).forEach(([page, field]) => {
@@ -783,6 +778,9 @@ function doLogout() {
   Object.keys(ACC_MAP).forEach(p => { const el=$('na-'+p); if(el) el.style.display='flex'; });
   const mmu = document.getElementById('mm-users');
   if (mmu) mmu.style.display = 'none';
+  const mmsa = document.getElementById('mm-sep-admin');
+  if (mmsa) mmsa.style.display = 'none';
+  closeMobMenu();
 }
 
 // ════════════════════════════════════════════════════════
@@ -1691,39 +1689,26 @@ function toast(msg, type) {
 // ════════════════════════════════════════════════════════
 // MOBILE
 // ════════════════════════════════════════════════════════
-const MOB_NAV_PAGES = ['tdb','cmd','tkt','task','caisse'];
-
 function mobNav(page) {
-  // Update bottom nav active state
-  MOB_NAV_PAGES.forEach(p => {
-    const el = document.getElementById('mn-' + p);
-    if (el) el.classList.toggle('on', p === page);
-  });
-  // Update more menu
+  // Update drawer active state
   document.querySelectorAll('.mob-menu-item').forEach(el => el.classList.remove('on'));
   const mm = document.getElementById('mm-' + page);
   if (mm) mm.classList.add('on');
-  // Update FAB action based on page
-  updateFab(page);
 }
 
 function toggleMobMenu() {
   const m = document.getElementById('mob-menu');
+  const b = document.getElementById('mob-backdrop');
   m.classList.toggle('open');
+  if (b) b.classList.toggle('open', m.classList.contains('open'));
 }
 
 function closeMobMenu() {
-  document.getElementById('mob-menu').classList.remove('open');
+  const m = document.getElementById('mob-menu');
+  const b = document.getElementById('mob-backdrop');
+  if (m) m.classList.remove('open');
+  if (b) b.classList.remove('open');
 }
-
-// Close mob menu on outside click
-document.addEventListener('click', function(e) {
-  const menu = document.getElementById('mob-menu');
-  const btn   = document.getElementById('mob-more-btn');
-  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
-    menu.classList.remove('open');
-  }
-});
 
 // Sync mobile badges
 function updateBadgesAll() {
@@ -1737,6 +1722,14 @@ function updateBadgesAll() {
   show('tkt',  F1.filter(r=>typ(r)==='TICKET').length);
   show('task', TASKS.filter(r=>(r.progression||'NV')!=='Terminé').length);
   show('prs',  F1.filter(r=>typ(r)==='PROSPECTION').length);
+}
+
+// Show admin items in mobile menu
+function showMobAdminItems() {
+  const sep = document.getElementById('mm-sep-admin');
+  const usr = document.getElementById('mm-users');
+  if (sep) sep.style.display = 'block';
+  if (usr) usr.style.display = 'flex';
 }
 
 // Override updateBadges to also update mobile
