@@ -1815,8 +1815,12 @@ function updateBadgesAll() {
     (seeAll || String(r.attribuer||'').trim().toUpperCase() === myName)
   ).length;
 
-  // PROSPECTION: keep total for now
-  const prsN = F1.filter(r => typ(r)==='PROSPECTION').length;
+  // PROSPECTION: today + filtered by user
+  const prsN = F1.filter(r =>
+    typ(r)==='PROSPECTION' &&
+    isToday(r.Date||r.date) &&
+    (seeAll || String(r.commercial||r.Commercial||'').trim().toUpperCase() === myName)
+  ).length;
 
   // CAISSE: today's operations
   const caisseN = CAISSE.filter(r => isToday(r.Date||r.date)).length;
