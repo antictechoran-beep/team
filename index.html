@@ -139,7 +139,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
 .mob-menu-item.on{background:var(--bg3);color:var(--blue);border-right:3px solid var(--blue)}
 .mob-menu-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.6rem;padding:.05rem .35rem;border-radius:8px;font-weight:700}
 /* Three-dots button in topbar */
-.mob-dots-btn{display:none;position:fixed;bottom:1.2rem;right:1.2rem;z-index:198;background:var(--blue);border:none;color:#fff;border-radius:50%;width:52px;height:52px;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(59,130,246,.5)}
+.mob-dots-btn{position:fixed;top:.5rem;right:.75rem;z-index:500;background:var(--blue);border:none;color:#fff;border-radius:8px;width:42px;height:42px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(59,130,246,.5)}
 .mob-dots-btn:hover{background:#2563eb}
 .mob-dots-btn:active{transform:scale(.92)}
 
@@ -148,7 +148,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
   /* Hide desktop sidebar */
   .sidebar { display: none !important; }
   /* Show dots button */
-  .mob-dots-btn { display: flex !important; }
+  /* mob-dots-btn always visible */
   /* Hide logout text on mobile, keep dots */
   #tb-logout { display: none !important; }
   /* Content takes full width */
@@ -790,6 +790,18 @@ document.getElementById('lgu').addEventListener('keydown', e => { if(e.key==='En
 document.getElementById('lgbtn-auto')?.addEventListener('keydown', e => { if(e.key==='Enter') doAutoLogin(); });
 // Init on page load
 initLogin();
+// Hide hamburger on desktop
+(function(){
+  const btn = document.getElementById('mob-dots-btn');
+  if (!btn) return;
+  const isMob = window.innerWidth <= 700 || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  if (!isMob) btn.style.display = 'none';
+  // Also handle sidebar visibility
+  window.addEventListener('resize', function(){
+    const mob = window.innerWidth <= 700;
+    if (btn) btn.style.display = mob ? 'flex' : 'none';
+  });
+})();
 
 async function doLogin() {
   const u = $('lgu').value.trim().toUpperCase();
