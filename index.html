@@ -139,9 +139,9 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
 .mob-menu-item.on{background:var(--bg3);color:var(--blue);border-right:3px solid var(--blue)}
 .mob-menu-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.6rem;padding:.05rem .35rem;border-radius:8px;font-weight:700}
 /* Three-dots button in topbar */
-.mob-dots-btn{display:none;background:var(--blue);border:none;color:#fff;border-radius:8px;padding:.45rem .65rem;cursor:pointer;line-height:1;align-items:center;justify-content:center}
+.mob-dots-btn{display:none;position:fixed;bottom:1.2rem;right:1.2rem;z-index:198;background:var(--blue);border:none;color:#fff;border-radius:50%;width:52px;height:52px;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(59,130,246,.5)}
 .mob-dots-btn:hover{background:#2563eb}
-.mob-dots-btn:active{transform:scale(.95)}
+.mob-dots-btn:active{transform:scale(.92)}
 
 /* ── RESPONSIVE ── */
 @media (max-width: 700px) {
@@ -268,13 +268,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <span id="tbuser">—</span>
       <span class="tb-role" id="tbrole" style="display:none">ADMIN</span>
       <button class="btn-out" onclick="doLogout()" id="tb-logout">Déconnexion</button>
-      <button class="mob-dots-btn" id="mob-dots-btn" onclick="toggleMobMenu()">
-        <span style="display:flex;flex-direction:column;gap:4px;pointer-events:none">
-          <span style="display:block;width:20px;height:2px;background:currentColor;border-radius:2px"></span>
-          <span style="display:block;width:20px;height:2px;background:currentColor;border-radius:2px"></span>
-          <span style="display:block;width:20px;height:2px;background:currentColor;border-radius:2px"></span>
-        </span>
-      </button>
+
     </div>
   </div>
   <div class="body">
@@ -288,7 +282,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <div class="nav-a" id="na-task" onclick="goPage('task')">✅ Task <span class="nav-badge" id="nb-task" style="display:none"></span></div>
       <div class="nav-a" id="na-prs" onclick="goPage('prs')">🎯 Prospection <span class="nav-badge" id="nb-prs" style="display:none"></span></div>
       <div class="nav-g">Gestion</div>
-      <div class="nav-a" id="na-caisse" onclick="goPage('caisse')">💰 Caisse</div>
+      <div class="nav-a" id="na-caisse" onclick="goPage('caisse')">💰 Caisse <span class="nav-badge" id="nb-caisse" style="display:none"></span></div>
       <div class="nav-a" id="na-clients" onclick="goPage('clients')">👥 Clients</div>
       <div class="nav-a" id="na-stock" onclick="goPage('stock')">📦 Stock</div>
       <div class="nav-g" id="ag" style="display:none">Admin</div>
@@ -478,7 +472,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <div class="mob-menu-item" id="mm-task" onclick="goPage('task');closeMobMenu()">✅ <span>Task</span><span class="mob-menu-badge" id="mnb-task" style="display:none"></span></div>
       <div class="mob-menu-item" id="mm-prs" onclick="goPage('prs');closeMobMenu()">🎯 <span>Prospection</span></div>
       <div class="mob-menu-sep">Gestion</div>
-      <div class="mob-menu-item" id="mm-caisse" onclick="goPage('caisse');closeMobMenu()">💰 <span>Caisse</span></div>
+      <div class="mob-menu-item" id="mm-caisse" onclick="goPage('caisse');closeMobMenu()">💰 <span>Caisse</span><span class="mob-menu-badge" id="mnb-caisse" style="display:none"></span></div>
       <div class="mob-menu-item" id="mm-clients" onclick="goPage('clients');closeMobMenu()">👥 <span>Clients</span></div>
       <div class="mob-menu-item" id="mm-stock" onclick="goPage('stock');closeMobMenu()">📦 <span>Stock</span></div>
       <div class="mob-menu-sep" id="mm-sep-admin" style="display:none">Admin</div>
@@ -1789,16 +1783,49 @@ function closeMobMenu() {
 
 // Sync mobile badges
 function updateBadgesAll() {
+  const today = new Date().toISOString().split('T')[0];
+  const isToday = v => { const d = fmtDate(v); return d === today; };
+  const myName = (CU?.nom||'').toUpperCase();
+  const isAdmin = CU?.type === 'admin';
+  const seeAll  = isAdmin || String(CU?.acces_obj||'no').toLowerCase() === 'yes';
+
   const show = (id, n) => {
     ['nb-'+id, 'mnb-'+id].forEach(bid => {
       const el = document.getElementById(bid);
       if (el) { el.textContent = n; el.style.display = n > 0 ? 'inline-block' : 'none'; }
     });
   };
-  show('cmd',  F1.filter(r=>typ(r)==='COMMANDE').length);
-  show('tkt',  F1.filter(r=>typ(r)==='TICKET').length);
-  show('task', TASKS.filter(r=>(r.progression||'NV')!=='Terminé').length);
-  show('prs',  F1.filter(r=>typ(r)==='PROSPECTION').length);
+
+  // COMMANDE: today OR Processing
+  const cmdN = F1.filter(r =>
+    typ(r)==='COMMANDE' &&
+    (isToday(r.Date||r.date) || (r.Statu||r.statu||'').toLowerCase()==='processing')
+  ).length;
+
+  // TICKET: NV only, filtered by user
+  const tktN = F1.filter(r =>
+    typ(r)==='TICKET' &&
+    (r.Statu||r.statu||'').toUpperCase() === 'NV' &&
+    (seeAll || String(r.technicien||r.commercial||'').trim().toUpperCase() === myName)
+  ).length;
+
+  // TASK: NV only, filtered by user
+  const taskN = TASKS.filter(r =>
+    (r.progression||'NV') === 'NV' &&
+    (seeAll || String(r.attribuer||'').trim().toUpperCase() === myName)
+  ).length;
+
+  // PROSPECTION: keep total for now
+  const prsN = F1.filter(r => typ(r)==='PROSPECTION').length;
+
+  // CAISSE: today's operations
+  const caisseN = CAISSE.filter(r => isToday(r.Date||r.date)).length;
+
+  show('cmd',    cmdN);
+  show('tkt',    tktN);
+  show('task',   taskN);
+  show('prs',    prsN);
+  show('caisse', caisseN);
 }
 
 // Show admin items in mobile menu
