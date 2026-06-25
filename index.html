@@ -123,6 +123,10 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
 
 
 /* ── MOBILE NAV (bottom bar) ── */
+/* Call button - mobile only */
+.call-btn-mob{display:none;align-items:center;justify-content:center;background:#22c55e;color:#fff;border-radius:7px;padding:.45rem .7rem;font-size:1rem;text-decoration:none;flex-shrink:0}
+@media (max-width:700px){.call-btn-mob{display:flex}}
+
 /* ── MOBILE MENU (drawer) ── */
 .mob-menu{display:none;position:fixed;top:0;right:0;bottom:0;width:80%;max-width:280px;background:var(--bg2);border-left:1px solid var(--bd);z-index:600;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,.5);transform:translateX(100%);transition:transform .25s ease}
 .mob-menu.open{display:flex;transform:translateX(0)}
@@ -482,6 +486,11 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
     </div>
   </div>
   <div class="mob-backdrop" id="mob-backdrop" onclick="closeMobMenu()"></div>
+  <button id="mob-dots-btn" onclick="toggleMobMenu()" style="position:fixed;top:7px;right:10px;z-index:500;background:#3b82f6;border:none;color:#fff;border-radius:8px;width:42px;height:42px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;padding:0">
+    <span style="display:block;width:20px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
+    <span style="display:block;width:20px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
+    <span style="display:block;width:20px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
+  </button>
 </div><!-- app -->
 
 <!-- MODAL F1 (Commande / Ticket / Prospection) -->
@@ -507,9 +516,9 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <div class="fg"><label>Client *</label><input class="inp" id="f1-client"/></div>
       <div class="fg"><label>Téléphone</label>
         <div style="display:flex;gap:.4rem">
-          <input class="inp" id="f1-tel" dir="ltr" style="flex:1" oninput="updateCallBtn('f1-tel','f1-tel-call')"/>
+          <input class="inp" id="f1-tel" dir="ltr" style="flex:1"/>
           <a id="f1-tel-call" href="#" onclick="callPhone('f1-tel');return false"
-            style="display:none;align-items:center;justify-content:center;background:var(--green);color:#fff;border-radius:7px;padding:.45rem .7rem;font-size:1rem;text-decoration:none;flex-shrink:0" title="Appeler">📞</a>
+            class="call-btn-mob" title="Appeler">📞</a>
         </div>
       </div>
     </div>
@@ -553,9 +562,9 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <div class="fg"><label>Client</label><input class="inp" id="task-client"/></div>
       <div class="fg"><label>Téléphone</label>
         <div style="display:flex;gap:.4rem">
-          <input class="inp" id="task-tel" dir="ltr" style="flex:1" oninput="updateCallBtn('task-tel','task-tel-call')"/>
+          <input class="inp" id="task-tel" dir="ltr" style="flex:1"/>
           <a id="task-tel-call" href="#" onclick="callPhone('task-tel');return false"
-            style="display:none;align-items:center;justify-content:center;background:var(--green);color:#fff;border-radius:7px;padding:.45rem .7rem;font-size:1rem;text-decoration:none;flex-shrink:0" title="Appeler">📞</a>
+            class="call-btn-mob" title="Appeler">📞</a>
         </div>
       </div>
     </div>
@@ -1549,7 +1558,6 @@ function openModalTask(ri) {
   $('task-code').value    = r.code||'';
   $('task-client').value  = r.client||'';
   $('task-tel').value     = r.téléphone||r.telephone||'';
-  updateCallBtn('task-tel','task-tel-call');
   $('task-desc').value    = r.desc||r.motif||'';
   $('task-attrib').value  = r.attribuer||'';
   $('task-produit').value = r.produit||'';
