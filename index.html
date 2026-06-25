@@ -505,7 +505,13 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
     <div class="fg"><label>Statut</label><div class="spills" id="f1-spills"></div></div>
     <div class="fr2">
       <div class="fg"><label>Client *</label><input class="inp" id="f1-client"/></div>
-      <div class="fg"><label>Téléphone</label><input class="inp" id="f1-tel" dir="ltr"/></div>
+      <div class="fg"><label>Téléphone</label>
+        <div style="display:flex;gap:.4rem">
+          <input class="inp" id="f1-tel" dir="ltr" style="flex:1" oninput="updateCallBtn('f1-tel','f1-tel-call')"/>
+          <a id="f1-tel-call" href="#" onclick="callPhone('f1-tel');return false"
+            style="display:none;align-items:center;justify-content:center;background:var(--green);color:#fff;border-radius:7px;padding:.45rem .7rem;font-size:1rem;text-decoration:none;flex-shrink:0" title="Appeler">📞</a>
+        </div>
+      </div>
     </div>
     <div class="fr2">
       <div class="fg"><label>Wilaya</label><input class="inp" id="f1-wilaya"/></div>
@@ -545,7 +551,13 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
     </div>
     <div class="fr2">
       <div class="fg"><label>Client</label><input class="inp" id="task-client"/></div>
-      <div class="fg"><label>Téléphone</label><input class="inp" id="task-tel" dir="ltr"/></div>
+      <div class="fg"><label>Téléphone</label>
+        <div style="display:flex;gap:.4rem">
+          <input class="inp" id="task-tel" dir="ltr" style="flex:1" oninput="updateCallBtn('task-tel','task-tel-call')"/>
+          <a id="task-tel-call" href="#" onclick="callPhone('task-tel');return false"
+            style="display:none;align-items:center;justify-content:center;background:var(--green);color:#fff;border-radius:7px;padding:.45rem .7rem;font-size:1rem;text-decoration:none;flex-shrink:0" title="Appeler">📞</a>
+        </div>
+      </div>
     </div>
     <div class="fg"><label>Motif / Description</label><textarea class="inp" id="task-desc"></textarea></div>
     <div class="fr2">
@@ -1525,6 +1537,7 @@ function openModalTask(ri) {
   $('task-code').value    = r.code||'';
   $('task-client').value  = r.client||'';
   $('task-tel').value     = r.téléphone||r.telephone||'';
+  updateCallBtn('task-tel','task-tel-call');
   $('task-desc').value    = r.desc||r.motif||'';
   $('task-attrib').value  = r.attribuer||'';
   $('task-produit').value = r.produit||'';
@@ -1756,6 +1769,24 @@ function toast(msg, type) {
   setTimeout(function(){ el.remove(); }, 3000);
 }
 
+
+// ════════════════════════════════════════════════════════
+// CALL BUTTON (mobile only)
+// ════════════════════════════════════════════════════════
+const IS_MOBILE = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+function callPhone(inputId) {
+  const num = document.getElementById(inputId)?.value?.trim().replace(/\s/g,'');
+  if (!num) { toast('Numéro vide', 'w'); return; }
+  window.location.href = 'tel:' + num;
+}
+
+function updateCallBtn(inputId, btnId) {
+  const num = document.getElementById(inputId)?.value?.trim();
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.style.display = (IS_MOBILE && num && num.length >= 6) ? 'flex' : 'none';
+}
 
 // ════════════════════════════════════════════════════════
 // MOBILE
