@@ -124,16 +124,16 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
 
 /* ── MOBILE NAV (bottom bar) ── */
 /* Call button - mobile only */
-.call-btn-mob{display:none;align-items:center;justify-content:center;background:#22c55e;color:#fff;border-radius:7px;padding:.3rem .55rem;font-size:.85rem;text-decoration:none;flex-shrink:0;width:36px;height:36px}
+.call-btn-mob{display:none;align-items:center;justify-content:center;background:#22c55e;color:#fff;border-radius:6px;padding:.15rem .5rem;font-size:.75rem;text-decoration:none;font-family:var(--font);font-weight:500}
 @media (max-width:700px){.call-btn-mob{display:flex}}
 
 /* Hamburger in topbar */
-.mob-ham-btn{display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:7px;width:38px;height:38px;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:0;flex-shrink:0}
-.mob-ham-btn:hover{background:rgba(255,255,255,.25)}
+.mob-ham-btn{display:none;position:fixed;bottom:1.2rem;right:1.2rem;z-index:199;background:#3b82f6;border:none;color:#fff;border-radius:50%;width:52px;height:52px;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:0;box-shadow:0 4px 16px rgba(59,130,246,.5)}
+.mob-ham-btn:hover{background:#2563eb}
+.mob-ham-btn:active{transform:scale(.92)}
 @media (max-width:700px){
   .mob-ham-btn{display:flex}
   #tb-logout{display:none}
-  .sdot{display:none}
 }
 
 /* ── MOBILE MENU (drawer) ── */
@@ -283,11 +283,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <span id="tbuser">—</span>
       <span class="tb-role" id="tbrole" style="display:none">ADMIN</span>
       <button class="btn-out" onclick="doLogout()" id="tb-logout">Déconnexion</button>
-      <button id="mob-dots-btn" onclick="toggleMobMenu()" class="mob-ham-btn">
-        <span style="display:block;width:18px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
-        <span style="display:block;width:18px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
-        <span style="display:block;width:18px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
-      </button>
+
     </div>
   </div>
   <div class="body">
@@ -501,7 +497,11 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
     </div>
   </div>
   <div class="mob-backdrop" id="mob-backdrop" onclick="closeMobMenu()"></div>
-
+  <button id="mob-dots-btn" onclick="toggleMobMenu()" class="mob-ham-btn">
+    <span style="display:block;width:20px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
+    <span style="display:block;width:20px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
+    <span style="display:block;width:20px;height:2px;background:#fff;border-radius:2px;pointer-events:none"></span>
+  </button>
 </div><!-- app -->
 
 <!-- MODAL F1 (Commande / Ticket / Prospection) -->
@@ -525,12 +525,13 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
     <div class="fg"><label>Statut</label><div class="spills" id="f1-spills"></div></div>
     <div class="fr2">
       <div class="fg"><label>Client *</label><input class="inp" id="f1-client"/></div>
-      <div class="fg"><label>Téléphone</label>
-        <div style="display:flex;gap:.4rem">
-          <input class="inp" id="f1-tel" dir="ltr" style="flex:1"/>
+      <div class="fg">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <label>Téléphone</label>
           <a id="f1-tel-call" href="#" onclick="callPhone('f1-tel');return false"
-            class="call-btn-mob" title="Appeler">📞</a>
+            class="call-btn-mob" title="Appeler" style="font-size:.75rem;padding:.15rem .5rem;border-radius:6px;gap:.3rem">📞 Appeler</a>
         </div>
+        <input class="inp" id="f1-tel" dir="ltr"/>
       </div>
     </div>
     <div class="fr2">
@@ -571,12 +572,13 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
     </div>
     <div class="fr2">
       <div class="fg"><label>Client</label><input class="inp" id="task-client"/></div>
-      <div class="fg"><label>Téléphone</label>
-        <div style="display:flex;gap:.4rem">
-          <input class="inp" id="task-tel" dir="ltr" style="flex:1"/>
+      <div class="fg">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <label>Téléphone</label>
           <a id="task-tel-call" href="#" onclick="callPhone('task-tel');return false"
-            class="call-btn-mob" title="Appeler">📞</a>
+            class="call-btn-mob" title="Appeler" style="font-size:.75rem;padding:.15rem .5rem;border-radius:6px;gap:.3rem">📞 Appeler</a>
         </div>
+        <input class="inp" id="task-tel" dir="ltr"/>
       </div>
     </div>
     <div class="fg"><label>Motif / Description</label><textarea class="inp" id="task-desc"></textarea></div>
