@@ -513,11 +513,15 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
     <input type="hidden" id="f1-type"/>
     <!-- Convert bar -->
     <div id="f1-cvt" style="display:none;margin-bottom:.7rem">
-      <div style="font-size:.71rem;color:var(--dim);margin-bottom:.3rem">Convertir en :</div>
-      <div style="display:flex;gap:.4rem">
+      <div style="font-size:.71rem;color:var(--dim);margin-bottom:.5rem">Convertir en :</div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.35rem">
         <button class="btn btn-sm btn-ghost" id="cvt-cmd" onclick="cvtType('COMMANDE')">📦 Commande</button>
         <button class="btn btn-sm btn-ghost" id="cvt-tkt" onclick="cvtType('TICKET')">🎫 Ticket IT</button>
         <button class="btn btn-sm btn-ghost" id="cvt-prs" onclick="cvtType('PROSPECTION')">🎯 Prospection</button>
+      </div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.35rem">
+        <button class="btn btn-sm" style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3)" onclick="dupliquerCommande()">📋 Dupliquer commande</button>
+        <button class="btn btn-sm" style="background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.3)" onclick="cvtToTask()">✅ Créer task client</button>
       </div>
       <div class="sep"></div>
     </div>
@@ -1426,6 +1430,91 @@ function pickPill(el, val, color) {
 function getPickedStatus() {
   const on = $('f1-spills').querySelector('.spill.on');
   return on ? on.textContent.trim() : f1StatusList[0]?.k || '';
+}
+
+function dupliquerCommande() {
+  const ri = $('f1-ri').value;
+  if (!ri) { toast('Erreur: index manquant','e'); return; }
+  const orig = F1.find(x => parseInt(x._rowIndex) === parseInt(ri));
+  if (!orig) { toast('Enregistrement introuvable','e'); return; }
+  closeOv('ov-f1');
+  setTimeout(async function() {
+    if (!confirm('Dupliquer cette commande ? Une nouvelle commande identique sera créée.')) return;
+    const row = {
+      TYPE:              'COMMANDE',
+      Client:            orig.Client||orig.client||'',
+      'Téléphone':       orig['Téléphone']||orig.Telephone||'',
+      Wilaya:            orig.Wilaya||orig.wilaya||'',
+      Commune:           orig.Commune||orig.commune||'',
+      Produit:           orig.Produit||orig.produit||'',
+      'Prix Produit':    parseFloat(orig['Prix Produit']||0),
+      'Tarif Livraison': parseFloat(orig['Tarif Livraison']||0),
+      Total:             parseFloat(orig.Total||orig.total||0),
+      Statu:             'En Att',
+      commercial:        orig.commercial||orig.Commercial||'',
+      technicien:        orig.technicien||'',
+      Note:              orig.Note||orig.note||'',
+      Date:              new Date().toISOString().split('T')[0],
+    };
+    showL('Duplication en cours...');
+    const res = await call('addOrder', {row});
+    hideL();
+    if (res.ok) {
+      toast('Commande dupliquée ✓ — ouverture...', 's');
+      const r2 = await call('getSheet', {sheet:'Feuille 1'});
+      if (r2.ok) {
+        F1 = r2.rows;
+        updateBadges();
+        const newRow = F1.slice().sort((a,b) => b._rowIndex - a._rowIndex)
+          .find(r => typ(r)==='COMMANDE' && (r.Client||r.client||'')===(orig.Client||orig.client||''));
+        if (newRow) {
+          goPage('cmd');
+          setTimeout(() => openModalF1(parseInt(newRow._rowIndex), 'COMMANDE'), 200);
+        }
+      }
+    } else toast(res.error||'Erreur','e');
+  }, 150);
+}
+
+async function cvtToTask() {
+  const ri = $('f1-ri').value;
+  if (!ri) { toast('Erreur: index manquant','e'); return; }
+  const orig = F1.find(x => parseInt(x._rowIndex) === parseInt(ri));
+  if (!orig) { toast('Enregistrement introuvable','e'); return; }
+  closeOv('ov-f1');
+  setTimeout(async function() {
+    if (!confirm('Créer une task pour ce client ?')) return;
+    const row = {
+      client:      orig.Client||orig.client||'',
+      'téléphone': orig['Téléphone']||orig.Telephone||'',
+      produit:     orig.Produit||orig.produit||'',
+      titre:       (orig.Client||orig.client||'') + ' — ' + (orig.Produit||orig.produit||''),
+      motif:       '',
+      desc:        '',
+      attribuer:   orig.technicien||'',
+      montant:     0,
+      progression: 'NV',
+      commentaire: '',
+      date:        new Date().toISOString().split('T')[0],
+    };
+    showL('Création task...');
+    const res = await call('addTask', {row});
+    hideL();
+    if (res.ok) {
+      toast('Task créée ✓ — ouverture...', 's');
+      const r2 = await call('getSheet', {sheet:'TASK'});
+      if (r2.ok) {
+        TASKS = r2.rows;
+        updateBadges();
+        const newTask = TASKS.slice().sort((a,b) => b._rowIndex - a._rowIndex)
+          .find(t => (t.client||'')===(orig.Client||orig.client||''));
+        if (newTask) {
+          goPage('task');
+          setTimeout(() => openModalTask(parseInt(newTask._rowIndex)), 200);
+        }
+      }
+    } else toast(res.error||'Erreur','e');
+  }, 150);
 }
 
 function cvtType(t) {
