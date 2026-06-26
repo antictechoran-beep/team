@@ -772,12 +772,15 @@ async function call(action, body) {
       res = await fetch(API + '?' + p.toString());
     } else {
       // Write actions: POST with JSON body
-      // Apps Script does a redirect, so we send data BOTH in URL params AND body
-      // This ensures data survives the redirect
+      // Send action + rowIndex in URL (survive redirect) + full data in body
       const payload = JSON.stringify({action, ...(body||{})});
       url = API + '?action=' + encodeURIComponent(action);
       if (body && body.rowIndex !== undefined) {
         url += '&rowIndex=' + encodeURIComponent(body.rowIndex);
+      }
+      // Also send row as URL param for extra safety
+      if (body && body.row) {
+        url += '&rowData=' + encodeURIComponent(JSON.stringify(body.row));
       }
       res = await fetch(url, {
         method: 'POST',
