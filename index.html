@@ -763,31 +763,16 @@ const ACC_MAP = {cmd:'acces_commande',tkt:'acces_ticket',task:'acces_task',prs:'
 async function call(action, body) {
   dot('spin');
   try {
-    let url, res;
-    // GET-only actions (read)
-    const GET_ACTIONS = ['getSheets','getSheet','getUsers'];
-    if (GET_ACTIONS.includes(action)) {
-      const p = new URLSearchParams({action});
-      if (body) Object.keys(body).forEach(k => p.set(k, body[k]));
-      res = await fetch(API + '?' + p.toString());
-    } else {
-      // Write actions: POST with JSON body
-      // Send action + rowIndex in URL (survive redirect) + full data in body
-      const payload = JSON.stringify({action, ...(body||{})});
-      url = API + '?action=' + encodeURIComponent(action);
-      if (body && body.rowIndex !== undefined) {
-        url += '&rowIndex=' + encodeURIComponent(body.rowIndex);
-      }
-      // Also send row as URL param for extra safety
-      if (body && body.row) {
-        url += '&rowData=' + encodeURIComponent(JSON.stringify(body.row));
-      }
-      res = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type': 'text/plain'},
-        body: payload
-      });
+    // Send EVERYTHING as GET params - avoids Apps Script redirect body loss
+    const params = { action: action };
+    if (body) {
+      if (body.sheet)    params.sheet    = body.sheet;
+      if (body.rowIndex !== undefined) params.rowIndex = String(body.rowIndex);
+      if (body.status)   params.status   = body.status;
+      if (body.row)      params.row      = JSON.stringify(body.row);
     }
+    const url = API + '?' + new URLSearchParams(params).toString();
+    const res  = await fetch(url);
     const text = await res.text();
     let d;
     try { d = JSON.parse(text); }
