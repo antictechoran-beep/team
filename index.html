@@ -550,10 +550,10 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
     <!-- Status pills -->
     <div class="fg"><label>Statut</label><div class="spills" id="f1-spills"></div></div>
     <div class="fr2">
-      <div class="fg"><label>Client *</label><input class="inp" id="f1-client"/></div>
+      <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center"><label>Client *</label><button type="button" onclick="copyField('f1-client')" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.75rem;padding:0;font-family:var(--font)">📋</button></div><input class="inp" id="f1-client"/></div>
       <div class="fg">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <label>Téléphone</label>
+          <label>Téléphone</label><button type="button" onclick="copyField('f1-tel')" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.75rem;padding:0;font-family:var(--font)">📋</button>
           <a id="f1-tel-call" href="#" onclick="callPhone('f1-tel');return false"
             class="call-btn-mob" title="Appeler" style="font-size:.75rem;padding:.15rem .5rem;border-radius:6px;gap:.3rem">📞 Appeler</a>
         </div>
@@ -562,15 +562,15 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
     </div>
     <div class="fr2">
       <div class="fg"><label>Wilaya</label><input class="inp" id="f1-wilaya"/></div>
-      <div class="fg"><label>Commune</label><input class="inp" id="f1-commune"/></div>
+      <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center"><label>Commune</label><button type="button" onclick="copyField('f1-commune')" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.75rem;padding:0;font-family:var(--font)">📋</button></div><input class="inp" id="f1-commune"/></div>
     </div>
-    <div class="fg"><label>Produit / Objet</label><input class="inp" id="f1-produit"/></div>
+    <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center"><label>Produit / Objet</label><button type="button" onclick="copyField('f1-produit')" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.75rem;padding:0;font-family:var(--font)">📋</button></div><input class="inp" id="f1-produit"/></div>
     <div class="fr2" id="f1-prix-row">
       <div class="fg"><label>Prix produit</label><input class="inp" id="f1-prix" type="number" oninput="calcF1()"/></div>
       <div class="fg"><label>Tarif livraison</label><input class="inp" id="f1-liv" type="number" value="0" oninput="calcF1()"/></div>
     </div>
     <div class="fr2">
-      <div class="fg"><label>Total</label><input class="inp" id="f1-total" readonly style="color:var(--green)"/></div>
+      <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center"><label>Total</label><button type="button" onclick="copyField('f1-total')" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.75rem;padding:0;font-family:var(--font)">📋</button></div><input class="inp" id="f1-total" readonly style="color:var(--green)"/></div>
       <div class="fg"><label>Commercial</label><select class="inp" id="f1-com"><option value="">—</option></select></div>
     </div>
     <div class="fg"><label>Technicien</label><select class="inp" id="f1-tech"><option value="">—</option></select></div>
@@ -579,6 +579,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
   <div class="mf">
     <div><button class="btn btn-red btn-sm" id="f1-del" style="display:none" onclick="delF1()">🗑️ Supprimer</button></div>
     <div class="mf-r">
+      <button class="btn btn-ghost btn-sm" onclick="copyAllF1()" title="Copier tout">📋 Copier</button>
       <button class="btn btn-ghost" onclick="closeOv('ov-f1')">Annuler</button>
       <button class="btn btn-blue" id="f1-save" onclick="saveF1()">💾 Enregistrer</button>
     </div>
@@ -600,7 +601,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <div class="fg"><label>Client</label><input class="inp" id="task-client"/></div>
       <div class="fg">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <label>Téléphone</label>
+          <label>Téléphone</label><button type="button" onclick="copyField('f1-tel')" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.75rem;padding:0;font-family:var(--font)">📋</button>
           <a id="task-tel-call" href="#" onclick="callPhone('task-tel');return false"
             class="call-btn-mob" title="Appeler" style="font-size:.75rem;padding:.15rem .5rem;border-radius:6px;gap:.3rem">📞 Appeler</a>
         </div>
@@ -1369,6 +1370,45 @@ function renderStock() {
 // ════════════════════════════════════════════════════════
 // NOTES
 // ════════════════════════════════════════════════════════
+function copyField(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const text = el.value.trim();
+  if (!text) { toast('Champ vide','w'); return; }
+  navigator.clipboard.writeText(text).then(function() {
+    toast('Copié ✓','s');
+  }).catch(function() { toast('Copie non supportée','w'); });
+}
+
+function copyAllF1() {
+  const client  = document.getElementById('f1-client')?.value?.trim()||'';
+  const tel     = document.getElementById('f1-tel')?.value?.trim()||'';
+  const commune = document.getElementById('f1-commune')?.value?.trim()||'';
+  const produit = document.getElementById('f1-produit')?.value?.trim()||'';
+  const total   = document.getElementById('f1-total')?.value?.trim()||'';
+  const parts = [];
+  if (client)  parts.push('Client: '  + client);
+  if (tel)     parts.push('Tél: '     + tel);
+  if (commune) parts.push('Commune: ' + commune);
+  if (produit) parts.push('Produit: ' + produit);
+  if (total)   parts.push('Total: '   + total + ' DA');
+  const text = parts.join('\n');
+  navigator.clipboard.writeText(text).then(function() {
+    toast('Infos copiées ✓','s');
+  }).catch(function() { toast('Copie non supportée','w'); });
+}
+
+function copyNoteBtn(btn) {
+  const titre   = btn.getAttribute('data-titre')||'';
+  const contenu = btn.getAttribute('data-contenu')||'';
+  const text    = titre + (contenu ? '\n\n' + contenu : '');
+  navigator.clipboard.writeText(text).then(function() {
+    const orig = btn.textContent;
+    btn.textContent = '✓'; btn.style.color = 'var(--green)';
+    setTimeout(function(){ btn.textContent = orig; btn.style.color = ''; }, 1500);
+  }).catch(function() { toast('Copie non supportée','w'); });
+}
+
 async function loadNotes() {
   showL('Chargement notes...');
   const r = await call('getSheet', {sheet:'note'});
@@ -1419,7 +1459,11 @@ function renderNotes() {
         <span style="background:${typeColor}22;color:${typeColor};border-radius:20px;padding:.12rem .5rem;font-size:.66rem;font-weight:600;white-space:nowrap;flex-shrink:0">${typeLabel}</span>
       </div>
       ${contenu ? `<div style="font-size:.8rem;color:var(--dim);white-space:pre-wrap;line-height:1.5">${contenu.substring(0,200)}${contenu.length>200?'…':''}</div>` : ''}
-      <div style="font-size:.7rem;color:var(--dim);margin-top:auto">👤 ${esc(user)}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto">
+        <div style="font-size:.7rem;color:var(--dim)">👤 ${esc(user)}</div>
+        <button class="copy-note-btn" data-titre="${titre}" data-contenu="${contenu||''}" onclick="event.stopPropagation();copyNoteBtn(this)"
+          style="background:var(--bg3);border:1px solid var(--bd);color:var(--dim);border-radius:6px;padding:.18rem .5rem;font-size:.7rem;cursor:pointer;font-family:var(--font)">&#128203;</button>
+      </div>
     </div>`;
   }).join('');
 }
