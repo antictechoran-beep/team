@@ -2186,10 +2186,10 @@ function updateBadgesAll() {
     });
   };
 
-  // COMMANDE: today OR Processing
+  // COMMANDE: Processing only
   const cmdN = F1.filter(r =>
     typ(r)==='COMMANDE' &&
-    (isToday(r.Date||r.date) || (r.Statu||r.statu||'').toLowerCase()==='processing')
+    (r.Statu||r.statu||'').toLowerCase()==='processing'
   ).length;
 
   // TICKET: NV only, filtered by user
