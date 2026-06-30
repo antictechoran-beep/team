@@ -1612,11 +1612,29 @@ function openModalF1(ri, type) {
   $('f1-prix').value    = r['Prix Produit']||'';
   $('f1-liv').value     = r['Tarif Livraison']||0;
   $('f1-total').value   = r.Total||r.total||'';
-  $('f1-com').value     = r.commercial||r.Commercial||'';
-  $('f1-tech').value    = r.technicien||'';
+  setSelectSafe('f1-com',  r.commercial||r.Commercial||'');
+  setSelectSafe('f1-tech', r.technicien||'');
   $('f1-note').value    = r.Note||r.note||'';
 
   openOv('ov-f1');
+}
+
+// Ensure select has the value as an option even if not in the predefined list
+// (prevents commercial/technicien from being silently cleared)
+function setSelectSafe(id, value) {
+  const el = $(id);
+  if (!el || !value) { if(el) el.value = ''; return; }
+  let found = false;
+  for (let i = 0; i < el.options.length; i++) {
+    if (el.options[i].value === value) { found = true; break; }
+  }
+  if (!found) {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = value;
+    el.appendChild(opt);
+  }
+  el.value = value;
 }
 
 function renderStatusPills(cur) {
