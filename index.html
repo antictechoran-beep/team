@@ -399,6 +399,8 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
             <option value="">Toutes</option><option>NV</option><option>En cours</option><option>En Att</option><option>Terminé</option>
           </select>
           <select class="inp inp-sm" id="f-task-a" onchange="renderTask()"><option value="">Tous</option></select>
+          <input class="inp inp-sm" id="f-task-d1" type="date" onchange="renderTask()" title="Du"/>
+          <input class="inp inp-sm" id="f-task-d2" type="date" onchange="renderTask()" title="Au"/>
           <button class="btn btn-ghost btn-sm" onclick="resetF('task')">✕</button>
         </div>
         <div class="kboard" id="board-task"></div>
@@ -1126,12 +1128,29 @@ function canAccess(p) {
 // ════════════════════════════════════════════════════════
 // KANBAN BUILDERS
 // ════════════════════════════════════════════════════════
-function buildKanban(containerId, items, statuses, cardFn, colorKey) {
+function buildKanban(containerId, items, statuses, cardFn, dateField) {
+  dateField = dateField || 'date';
   const board = $(containerId);
   if (!board) return;
   board.innerHTML = '';
+  const thisMonth = new Date().toISOString().substring(0,7); // YYYY-MM
+
   statuses.forEach(s => {
-    const colItems = items.filter(r => (r.Statu||r.statu||r.progression||'').trim() === s.k);
+    let colItems = items.filter(r => (r.Statu||r.statu||r.progression||'').trim() === s.k);
+
+    // Special handling for "Terminé" column: current month only + sorted by date desc
+    if (s.k === 'Terminé') {
+      colItems = colItems.filter(r => {
+        const d = fmtDate(r[dateField] || r.date || r.Date || '');
+        return d && d.substring(0,7) === thisMonth;
+      });
+      colItems = colItems.slice().sort((a, b) => {
+        const da = fmtDate(a[dateField]||a.date||a.Date||'') || '';
+        const db = fmtDate(b[dateField]||b.date||b.Date||'') || '';
+        return db.localeCompare(da); // most recent first
+      });
+    }
+
     const col = document.createElement('div');
     col.className = 'kcol';
     col.innerHTML = `<div class="kcol-h">
@@ -1263,13 +1282,16 @@ function renderTask() {
       return a === CU.nom.toUpperCase() || co === CU.nom.toUpperCase();
     });
   }
-  const q = gv('f-task-q'); const pf = gv('f-task-p'); const af = gv('f-task-a');
+  const q  = gv('f-task-q');  const pf = gv('f-task-p');  const af = gv('f-task-a');
+  const d1 = gv('f-task-d1'); const d2 = gv('f-task-d2');
   let data = [...src];
   if (q)  data = data.filter(r => JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
   if (pf) data = data.filter(r => (r.progression||'NV') === pf);
   if (af) data = data.filter(r => (r.attribuer||'') === af);
+  if (d1) data = data.filter(r => { const d=fmtDate(r.date||r.Date||''); return d && d >= d1; });
+  if (d2) data = data.filter(r => { const d=fmtDate(r.date||r.Date||''); return d && d <= d2; });
   fillSel('f-task-a', src.map(r=>r.attribuer||''));
-  buildKanban('board-task', data, S_TASK, cardTask);
+  buildKanban('board-task', data, S_TASK, cardTask, 'date');
 }
 
 function renderPrs() {
@@ -1782,6 +1804,14 @@ async function saveF1() {
   const type  = $('f1-type').value;
   const statu = getPickedStatus();
 
+  // Check if status changed compared to original → update Date to today
+  let statusChanged = !isEdit; // new entries always get today's date
+  if (isEdit) {
+    const orig = F1.find(x => parseInt(x._rowIndex) === ri);
+    const origStatu = orig ? (orig.Statu||orig.statu||'') : '';
+    if (origStatu !== statu) statusChanged = true;
+  }
+
   const row = {
     TYPE: type, Client: client,
     Téléphone:       $('f1-tel').value.trim(),
@@ -1796,7 +1826,7 @@ async function saveF1() {
     technicien:      $('f1-tech').value,
     Note:            $('f1-note').value.trim(),
   };
-  if (!isEdit) row.Date = new Date().toISOString().split('T')[0];
+  if (statusChanged) row.Date = new Date().toISOString().split('T')[0];
 
   $('f1-save').disabled = true;
   const action = isEdit ? 'updateOrder' : 'addOrder';
@@ -1851,6 +1881,16 @@ async function saveTask() {
   const riRaw = $('task-ri').value;
   const ri    = riRaw !== '' ? parseInt(riRaw) : null;
   const isEdit = ri !== null && !isNaN(ri);
+  const newProg = $('task-prog').value;
+
+  // Only refresh date if progression changed (or new task)
+  let progChanged = !isEdit;
+  if (isEdit) {
+    const orig = TASKS.find(x => parseInt(x._rowIndex) === ri);
+    const origProg = orig ? (orig.progression||'NV') : 'NV';
+    if (origProg !== newProg) progChanged = true;
+  }
+
   const row = {
     code: $('task-code').value.trim(),
     titre: $('task-titre').value.trim(),
@@ -1861,10 +1901,11 @@ async function saveTask() {
     attribuer: $('task-attrib').value,
     produit: $('task-produit').value.trim(),
     montant: parseFloat($('task-montant').value)||0,
-    progression: $('task-prog').value,
+    progression: newProg,
     commentaire: $('task-comment').value.trim(),
-    date: new Date().toISOString().split('T')[0],
   };
+  if (progChanged) row.date = new Date().toISOString().split('T')[0];
+
   const res = await call(isEdit?'updateTask':'addTask', isEdit?{rowIndex:ri,row}:{row});
   if (res.ok) { toast(isEdit?'Mis à jour ✓':'Ajouté ✓','s'); closeOv('ov-task'); loadTask(); }
   else toast(res.error||'Erreur','e');
