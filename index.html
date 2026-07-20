@@ -1136,7 +1136,7 @@ function buildKanban(containerId, items, statuses, cardFn, dateField) {
   const thisMonth = new Date().toISOString().substring(0,7); // YYYY-MM
 
   statuses.forEach(s => {
-    let colItems = items.filter(r => (r.Statu||r.statu||r.progression||'').trim() === s.k);
+    let colItems = items.filter(r => (r.Statu||r.statu||r.progression||'').trim().toLowerCase() === s.k.toLowerCase());
 
     // Special handling for "Terminé" column: current month only + sorted by date desc
     if (s.k === 'Terminé') {
@@ -1237,7 +1237,7 @@ function cardCaisse(r) {
 function applyFilters(data, q, sKey, sVal, cKey, cVal, d1, d2) {
   let d = [...data].reverse(); // latest first
   if (q)   d = d.filter(r => JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
-  if (sVal) d = d.filter(r => (r[sKey]||'') === sVal);
+  if (sVal) d = d.filter(r => String(r[sKey]||'').trim().toLowerCase() === String(sVal).toLowerCase());
   if (cVal) d = d.filter(r => (r[cKey]||'').toUpperCase() === cVal.toUpperCase());
   if (d1)  d = d.filter(r => { const dd=fmtDate(r.Date||r.date||''); return dd && dd >= d1; });
   if (d2)  d = d.filter(r => { const dd=fmtDate(r.Date||r.date||''); return dd && dd <= d2; });
