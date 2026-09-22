@@ -318,7 +318,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           </div>
         </div>
         <div class="filters" id="tdb-filters">
-          <input class="inp inp-sm" id="tdb-q" placeholder="🔍 Client / Produit..." oninput="renderTDB()" style="width:170px"/>
+          <input class="inp inp-sm" id="tdb-q" placeholder="🔍 Client / Produit..." oninput="deb('tdb-q',renderTDB)" style="width:170px"/>
           <input class="inp inp-sm" id="tdb-d1" type="date" onchange="renderTDB()" title="Du"/>
           <input class="inp inp-sm" id="tdb-d2" type="date" onchange="renderTDB()" title="Au"/>
           <select class="inp inp-sm" id="tdb-col" onchange="renderTDB()">
@@ -348,7 +348,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           </div>
         </div>
         <div class="filters">
-          <input class="inp inp-sm" id="f-cmd-q" placeholder="🔍 Recherche..." oninput="renderCmd()" style="width:170px"/>
+          <input class="inp inp-sm" id="f-cmd-q" placeholder="🔍 Recherche..." oninput="deb('f-cmd-q',renderCmd)" style="width:170px"/>
           <select class="inp inp-sm" id="f-cmd-s" onchange="renderCmd()">
             <option value="">Tous statuts</option>
             <option>Processing</option><option>En Att</option><option>Confirmé</option>
@@ -372,7 +372,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           </div>
         </div>
         <div class="filters">
-          <input class="inp inp-sm" id="f-tkt-q" placeholder="🔍 Recherche..." oninput="renderTkt()" style="width:170px"/>
+          <input class="inp inp-sm" id="f-tkt-q" placeholder="🔍 Recherche..." oninput="deb('f-tkt-q',renderTkt)" style="width:170px"/>
           <select class="inp inp-sm" id="f-tkt-s" onchange="renderTkt()">
             <option value="">Tous statuts</option>
             <option>NV</option><option>En cours</option><option>Résolu</option><option>Annullé</option>
@@ -394,7 +394,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           </div>
         </div>
         <div class="filters">
-          <input class="inp inp-sm" id="f-task-q" placeholder="🔍 Recherche..." oninput="renderTask()" style="width:170px"/>
+          <input class="inp inp-sm" id="f-task-q" placeholder="🔍 Recherche..." oninput="deb('f-task-q',renderTask)" style="width:170px"/>
           <select class="inp inp-sm" id="f-task-p" onchange="renderTask()">
             <option value="">Toutes</option><option>NV</option><option>En cours</option><option>En Att</option><option>Terminé</option>
           </select>
@@ -415,7 +415,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           </div>
         </div>
         <div class="filters">
-          <input class="inp inp-sm" id="f-prs-q" placeholder="🔍 Recherche..." oninput="renderPrs()" style="width:170px"/>
+          <input class="inp inp-sm" id="f-prs-q" placeholder="🔍 Recherche..." oninput="deb('f-prs-q',renderPrs)" style="width:170px"/>
           <select class="inp inp-sm" id="f-prs-s" onchange="renderPrs()">
             <option value="">Tous statuts</option>
             <option>Prospect</option><option>Contacté</option><option>Intéressé</option><option>Converti</option><option>Perdu</option>
@@ -436,7 +436,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
         </div>
         <div class="stats" id="caisse-stats"></div>
         <div class="filters">
-          <input class="inp inp-sm" id="f-ca-q" placeholder="🔍 Recherche..." oninput="renderCaisse()" style="width:170px"/>
+          <input class="inp inp-sm" id="f-ca-q" placeholder="🔍 Recherche..." oninput="deb('f-ca-q',renderCaisse)" style="width:170px"/>
           <select class="inp inp-sm" id="f-ca-t" onchange="renderCaisse()">
             <option value="">Tous</option><option value="in">Entrées</option><option value="out">Sorties</option>
           </select>
@@ -450,7 +450,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <!-- CLIENTS -->
       <div class="page" id="page-clients">
         <div class="ph"><h2>👥 Clients</h2><button class="btn btn-ghost btn-sm" onclick="loadClients()">🔄</button></div>
-        <div class="filters"><input class="inp inp-sm" id="f-cli-q" placeholder="🔍 Recherche..." oninput="renderClients()" style="width:200px"/></div>
+        <div class="filters"><input class="inp inp-sm" id="f-cli-q" placeholder="🔍 Recherche..." oninput="deb('f-cli-q',renderClients)" style="width:200px"/></div>
         <div class="twrap"><table>
           <thead><tr><th>N°</th><th>Nom</th><th>Adresse</th><th>Téléphone</th><th>Wilaya</th><th>Date</th></tr></thead>
           <tbody id="tb-clients"></tbody>
@@ -460,7 +460,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <!-- STOCK -->
       <div class="page" id="page-stock">
         <div class="ph"><h2>📦 Stock</h2><button class="btn btn-ghost btn-sm" onclick="loadStock()">🔄</button></div>
-        <div class="filters"><input class="inp inp-sm" id="f-stk-q" placeholder="🔍 Recherche..." oninput="renderStock()" style="width:200px"/></div>
+        <div class="filters"><input class="inp inp-sm" id="f-stk-q" placeholder="🔍 Recherche..." oninput="deb('f-stk-q',renderStock)" style="width:200px"/></div>
         <div class="twrap"><table>
           <thead><tr><th>Désignation</th><th>Réf</th><th>Qté</th><th>Alerte</th><th>Prix achat</th><th>Prix vente</th><th>Famille</th></tr></thead>
           <tbody id="tb-stock"></tbody>
@@ -477,7 +477,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           </div>
         </div>
         <div class="filters">
-          <input class="inp inp-sm" id="f-notes-q" placeholder="🔍 Recherche..." oninput="renderNotes()" style="width:180px"/>
+          <input class="inp inp-sm" id="f-notes-q" placeholder="🔍 Recherche..." oninput="deb('f-notes-q',renderNotes)" style="width:180px"/>
           <select class="inp inp-sm" id="f-notes-t" onchange="renderNotes()">
             <option value="">Toutes</option>
             <option value="public">🌐 Public</option>
@@ -503,7 +503,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <button class="mob-menu-close" onclick="closeMobMenu()">×</button>
     </div>
     <div class="mob-menu-body">
-      <div class="mob-menu-item" onclick="goPage('tdb');closeMobMenu()">📊 <span>Table de Bord</span></div>
+      <div class="mob-menu-item" id="mm-tdb" onclick="goPage('tdb');closeMobMenu()">📊 <span>Table de Bord</span></div>
       <div class="mob-menu-sep">Activités</div>
       <div class="mob-menu-item" id="mm-cmd" onclick="goPage('cmd');closeMobMenu()">📦 <span>Commande</span><span class="mob-menu-badge" id="mnb-cmd" style="display:none"></span></div>
       <div class="mob-menu-item" id="mm-tkt" onclick="goPage('tkt');closeMobMenu()">🎫 <span>Ticket IT</span><span class="mob-menu-badge" id="mnb-tkt" style="display:none"></span></div>
@@ -761,6 +761,17 @@ const S_TASK = [{k:'NV',c:'#f59e0b'},{k:'En cours',c:'#3b82f6'},{k:'En Att',c:'#
 const ACC_MAP = {cmd:'acces_commande',tkt:'acces_ticket',task:'acces_task',prs:'acces_prosp',caisse:'acces_caisse',clients:'acces_clients',stock:'acces_stock'};
 
 // ════════════════════════════════════════════════════════
+// DEBOUNCE (perf) — delays search/filter re-renders while typing
+// so the UI doesn't rebuild the whole board on every keystroke.
+// ════════════════════════════════════════════════════════
+const _debTimers = {};
+function deb(key, fn, wait) {
+  wait = wait || 220;
+  clearTimeout(_debTimers[key]);
+  _debTimers[key] = setTimeout(fn, wait);
+}
+
+// ════════════════════════════════════════════════════════
 // API
 // ════════════════════════════════════════════════════════
 async function call(action, body) {
@@ -910,7 +921,7 @@ function startApp() {
   // Hide TDB nav if no TABLE_BORD access
   if (CU.type !== 'admin' && String(CU.TABLE_BORD||'yes').toLowerCase() === 'no') {
     const el = $('na-tdb'); if (el) el.style.display = 'none';
-    const mel = document.getElementById('mn-tdb'); if (mel) mel.style.display = 'none';
+    const mel = document.getElementById('mm-tdb'); if (mel) mel.style.display = 'none';
   }
   loadAll();
 }
@@ -950,6 +961,12 @@ function goPage(p) {
   $('page-' + p)?.classList.add('on');
   $('na-' + p)?.classList.add('on');
   curPage = p;
+  // Populate filter <select> option lists only on navigation/data-load,
+  // never inside the search-render path (avoids rebuilding <select> on every keystroke)
+  if (p === 'cmd')  populateCmdFilters();
+  if (p === 'tkt')  populateTktFilters();
+  if (p === 'task') populateTaskFilters();
+  if (p === 'prs')  populatePrsFilters();
   if (p === 'tdb')     renderTDB();
   if (p === 'cmd')     renderCmd();
   if (p === 'tkt')     renderTkt();
@@ -985,6 +1002,7 @@ async function loadAll() {
   if (ru.ok)  USERS   = ru.users;
   if (rn.ok)  NOTES   = rn.rows;
   fillUserSelects();
+  populateTdbUserSelect();
   updateBadges();
   // If user has no TDB access, go to first allowed page
   let startPage = curPage;
@@ -995,8 +1013,8 @@ async function loadAll() {
   goPage(startPage);
 }
 
-async function loadF1()     { showL('Chargement...'); const r=await call('getSheet',{sheet:'Feuille 1'}); hideL(); if(r.ok){F1=r.rows;updateBadges();goPage(curPage);} }
-async function loadTask()   { showL('Chargement...'); const r=await call('getSheet',{sheet:'TASK'});      hideL(); if(r.ok){TASKS=r.rows;updateBadges();renderTask();} }
+async function loadF1()     { showL('Chargement...'); const r=await call('getSheet',{sheet:'Feuille 1'}); hideL(); if(r.ok){F1=r.rows;updateBadges();populateCmdFilters();populateTktFilters();populatePrsFilters();goPage(curPage);} }
+async function loadTask()   { showL('Chargement...'); const r=await call('getSheet',{sheet:'TASK'});      hideL(); if(r.ok){TASKS=r.rows;updateBadges();populateTaskFilters();renderTask();} }
 async function loadCaisse() { showL('Chargement...'); const r=await call('getSheet',{sheet:'caisse'});   hideL(); if(r.ok){CAISSE=r.rows;renderCaisse();} }
 async function loadClients(){ showL('Chargement...'); const r=await call('getSheet',{sheet:'CLIENTS'});  hideL(); if(r.ok){CLIENTS=r.rows;renderClients();} }
 async function loadStock()  { showL('Chargement...'); const r=await call('getSheet',{sheet:'STOCK'});    hideL(); if(r.ok){STOCK=r.rows;renderStock();} }
@@ -1014,6 +1032,18 @@ function typ(r) { return String(r.TYPE||r.type||'COMMANDE').toUpperCase(); }
 // ════════════════════════════════════════════════════════
 // TABLE DE BORD
 // ════════════════════════════════════════════════════════
+// Populate the TDB user filter <select>. Called once after data loads,
+// NOT on every renderTDB() call (previously rebuilt on every keystroke).
+function populateTdbUserSelect() {
+  const userSel = document.getElementById('tdb-user');
+  if (!userSel) return;
+  const prev = userSel.value;
+  const names = [...new Set(USERS.map(u => u.NOM||u.nom||'').filter(Boolean))];
+  userSel.innerHTML = '<option value="">Tous les utilisateurs</option>'
+    + names.map(n => '<option value="'+esc(n.toUpperCase())+'">'+esc(n)+'</option>').join('');
+  if (prev) userSel.value = prev;
+}
+
 function renderTDB() {
   // Read filters
   const q       = (document.getElementById('tdb-q')?.value||'').toLowerCase().trim();
@@ -1023,16 +1053,6 @@ function renderTDB() {
   const userF   = (document.getElementById('tdb-user')?.value||'').toUpperCase().trim();
   const todayOnly = document.getElementById('tdb-today')?.checked ?? true;
   const today   = new Date().toISOString().split('T')[0];
-
-  // Populate user select dynamically
-  const userSel = document.getElementById('tdb-user');
-  if (userSel) {
-    const prev = userSel.value;
-    const names = [...new Set(USERS.map(u => u.NOM||u.nom||'').filter(Boolean))];
-    userSel.innerHTML = '<option value="">Tous les utilisateurs</option>'
-      + names.map(n => '<option value="'+esc(n.toUpperCase())+'">'+esc(n)+'</option>').join('');
-    if (prev) userSel.value = prev;
-  }
 
   function matchDate(v) {
     const d = fmtDate(v);
@@ -1082,7 +1102,7 @@ function renderTDB() {
   const visibleCols = colF ? cols.filter(col => col.key === colF) : cols;
 
   const wrap = $('tdb-content');
-  wrap.innerHTML = '';
+  const frag = document.createDocumentFragment();
   visibleCols.filter(col => col.show).forEach(col => {
     const div = document.createElement('div');
     div.className = 'kcol';
@@ -1102,13 +1122,17 @@ function renderTDB() {
     const cards = document.createElement('div');
     cards.className = 'kcards';
     if (col.data.length) {
-      col.data.forEach(r => cards.appendChild(col.render(r)));
+      const cardsFrag = document.createDocumentFragment();
+      col.data.forEach(r => cardsFrag.appendChild(col.render(r)));
+      cards.appendChild(cardsFrag);
     } else {
       cards.innerHTML = '<div class="empty" style="padding:.6rem;font-size:.72rem">Aucun élément</div>';
     }
     div.appendChild(cards);
-    wrap.appendChild(div);
+    frag.appendChild(div);
   });
+  wrap.innerHTML = '';
+  wrap.appendChild(frag);
 }
 
 function resetTdbFilters() {
@@ -1132,7 +1156,7 @@ function buildKanban(containerId, items, statuses, cardFn, dateField) {
   dateField = dateField || 'date';
   const board = $(containerId);
   if (!board) return;
-  board.innerHTML = '';
+  const frag = document.createDocumentFragment();
   const thisMonth = new Date().toISOString().substring(0,7); // YYYY-MM
 
   statuses.forEach(s => {
@@ -1160,13 +1184,17 @@ function buildKanban(containerId, items, statuses, cardFn, dateField) {
     const cards = document.createElement('div');
     cards.className = 'kcards';
     if (colItems.length) {
-      colItems.forEach(r => cards.appendChild(cardFn(r)));
+      const cardsFrag = document.createDocumentFragment();
+      colItems.forEach(r => cardsFrag.appendChild(cardFn(r)));
+      cards.appendChild(cardsFrag);
     } else {
       cards.innerHTML = '<div style="color:var(--dim);font-size:.7rem;text-align:center;padding:.4rem">vide</div>';
     }
     col.appendChild(cards);
-    board.appendChild(col);
+    frag.appendChild(col);
   });
+  board.innerHTML = '';
+  board.appendChild(frag);
 }
 
 // ─── Card builders ───────────────────────────────────
@@ -1244,6 +1272,12 @@ function applyFilters(data, q, sKey, sVal, cKey, cVal, d1, d2) {
   return d;
 }
 
+// Populate the "commercial" filter <select> for Commandes.
+// Called once on load/navigation — not on every renderCmd() call.
+function populateCmdFilters() {
+  fillSel('f-cmd-c', F1.filter(r=>typ(r)==='COMMANDE').map(r=>r.commercial||r.Commercial||''));
+}
+
 function renderCmd() {
   const data = applyFilters(
     F1.filter(r=>typ(r)==='COMMANDE'),
@@ -1251,9 +1285,20 @@ function renderCmd() {
     'commercial', gv('f-cmd-c'),
     gv('f-cmd-d1'), gv('f-cmd-d2')
   );
-  // fill commercial select
-  fillSel('f-cmd-c', F1.filter(r=>typ(r)==='COMMANDE').map(r=>r.commercial||r.Commercial||''));
   buildKanban('board-cmd', data, S_CMD, cardF1);
+}
+
+// Populate the "technicien" filter <select> for Tickets.
+function populateTktFilters() {
+  let src = F1.filter(r => typ(r)==='TICKET');
+  if (CU && CU.type !== 'admin' && String(CU.acces_obj||'no').toLowerCase() !== 'yes') {
+    src = src.filter(r => {
+      const t = String(r.technicien||r.Technicien||'').trim().toUpperCase();
+      const co = String(r.commercial||r.Commercial||'').trim().toUpperCase();
+      return t === CU.nom.toUpperCase() || co === CU.nom.toUpperCase();
+    });
+  }
+  fillSel('f-tkt-t', src.map(r=>r.technicien||''));
 }
 
 function renderTkt() {
@@ -1268,8 +1313,20 @@ function renderTkt() {
   }
   const data = applyFilters(src, gv('f-tkt-q'), 'Statu', gv('f-tkt-s'),
     'technicien', gv('f-tkt-t'), gv('f-tkt-d1'), gv('f-tkt-d2'));
-  fillSel('f-tkt-t', src.map(r=>r.technicien||''));
   buildKanban('board-tkt', data, S_TKT, cardF1);
+}
+
+// Populate the "attribuer" filter <select> for Tasks.
+function populateTaskFilters() {
+  let src = [...TASKS];
+  if (CU && CU.type !== 'admin' && String(CU.acces_obj||'no').toLowerCase() !== 'yes') {
+    src = src.filter(r => {
+      const a = String(r.attribuer||'').trim().toUpperCase();
+      const co = String(r.commercial||'').trim().toUpperCase();
+      return a === CU.nom.toUpperCase() || co === CU.nom.toUpperCase();
+    });
+  }
+  fillSel('f-task-a', src.map(r=>r.attribuer||''));
 }
 
 function renderTask() {
@@ -1290,8 +1347,20 @@ function renderTask() {
   if (af) data = data.filter(r => (r.attribuer||'') === af);
   if (d1) data = data.filter(r => { const d=fmtDate(r.date||r.Date||''); return d && d >= d1; });
   if (d2) data = data.filter(r => { const d=fmtDate(r.date||r.Date||''); return d && d <= d2; });
-  fillSel('f-task-a', src.map(r=>r.attribuer||''));
   buildKanban('board-task', data, S_TASK, cardTask, 'date');
+}
+
+// Populate the "commercial" filter <select> for Prospection.
+function populatePrsFilters() {
+  let src = F1.filter(r => typ(r)==='PROSPECTION');
+  if (CU && CU.type !== 'admin' && String(CU.acces_obj||'no').toLowerCase() !== 'yes') {
+    src = src.filter(r => {
+      const co = String(r.commercial||r.Commercial||'').trim().toUpperCase();
+      const te = String(r.technicien||'').trim().toUpperCase();
+      return co === CU.nom.toUpperCase() || te === CU.nom.toUpperCase();
+    });
+  }
+  fillSel('f-prs-c', src.map(r=>r.commercial||''));
 }
 
 function renderPrs() {
@@ -1306,7 +1375,6 @@ function renderPrs() {
   }
   const data = applyFilters(src, gv('f-prs-q'), 'Statu', gv('f-prs-s'),
     'commercial', gv('f-prs-c'), '', '');
-  fillSel('f-prs-c', src.map(r=>r.commercial||''));
   buildKanban('board-prs', data, S_PRS, cardF1);
 }
 
@@ -2035,7 +2103,7 @@ async function saveUser() {
   if (res.ok) {
     toast('Enregistré ✓','s'); closeOv('ov-user');
     const ru = await call('getUsers');
-    if (ru.ok) { USERS = ru.users; fillUserSelects(); renderUsers(); }
+    if (ru.ok) { USERS = ru.users; fillUserSelects(); populateTdbUserSelect(); renderUsers(); }
   } else toast(res.error||'Erreur','e');
 }
 
@@ -2230,12 +2298,9 @@ function showMobAdminItems() {
   if (usr) usr.style.display = 'flex';
 }
 
-// Override updateBadges to also update mobile
-const _origUpdateBadges = updateBadges;
+// Override updateBadges to also update mobile (same as original app)
 window.updateBadges = function() { updateBadgesAll(); };
 
-// On startApp, show admin items in mob menu
-const _origStartApp = startApp;
 // Patch goPage to also update mobile nav
 const _origGoPage = goPage;
 window.goPage = function(p) {
