@@ -251,6 +251,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
 .empty{text-align:center;padding:2rem;color:var(--dim);font-size:.85rem}
 .sep{border-top:1px solid var(--bd);margin:.55rem 0}
 </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -318,7 +319,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           </div>
         </div>
         <div class="filters" id="tdb-filters">
-          <input class="inp inp-sm" id="tdb-q" placeholder="🔍 Client / Produit..." oninput="deb('tdb-q',renderTDB)" style="width:170px"/>
+          <input class="inp inp-sm" id="tdb-q" placeholder="🔍 Client / Produit..." oninput="debRender('renderTDB', renderTDB)" style="width:170px"/>
           <input class="inp inp-sm" id="tdb-d1" type="date" onchange="renderTDB()" title="Du"/>
           <input class="inp inp-sm" id="tdb-d2" type="date" onchange="renderTDB()" title="Au"/>
           <select class="inp inp-sm" id="tdb-col" onchange="renderTDB()">
@@ -348,7 +349,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           </div>
         </div>
         <div class="filters">
-          <input class="inp inp-sm" id="f-cmd-q" placeholder="🔍 Recherche..." oninput="deb('f-cmd-q',renderCmd)" style="width:170px"/>
+          <input class="inp inp-sm" id="f-cmd-q" placeholder="🔍 Recherche..." oninput="debRender('renderCmd', renderCmd)" style="width:170px"/>
           <select class="inp inp-sm" id="f-cmd-s" onchange="renderCmd()">
             <option value="">Tous statuts</option>
             <option>Processing</option><option>En Att</option><option>Confirmé</option>
@@ -372,7 +373,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           </div>
         </div>
         <div class="filters">
-          <input class="inp inp-sm" id="f-tkt-q" placeholder="🔍 Recherche..." oninput="deb('f-tkt-q',renderTkt)" style="width:170px"/>
+          <input class="inp inp-sm" id="f-tkt-q" placeholder="🔍 Recherche..." oninput="debRender('renderTkt', renderTkt)" style="width:170px"/>
           <select class="inp inp-sm" id="f-tkt-s" onchange="renderTkt()">
             <option value="">Tous statuts</option>
             <option>NV</option><option>En cours</option><option>Résolu</option><option>Annullé</option>
@@ -394,7 +395,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           </div>
         </div>
         <div class="filters">
-          <input class="inp inp-sm" id="f-task-q" placeholder="🔍 Recherche..." oninput="deb('f-task-q',renderTask)" style="width:170px"/>
+          <input class="inp inp-sm" id="f-task-q" placeholder="🔍 Recherche..." oninput="debRender('renderTask', renderTask)" style="width:170px"/>
           <select class="inp inp-sm" id="f-task-p" onchange="renderTask()">
             <option value="">Toutes</option><option>NV</option><option>En cours</option><option>En Att</option><option>Terminé</option>
           </select>
@@ -415,7 +416,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           </div>
         </div>
         <div class="filters">
-          <input class="inp inp-sm" id="f-prs-q" placeholder="🔍 Recherche..." oninput="deb('f-prs-q',renderPrs)" style="width:170px"/>
+          <input class="inp inp-sm" id="f-prs-q" placeholder="🔍 Recherche..." oninput="debRender('renderPrs', renderPrs)" style="width:170px"/>
           <select class="inp inp-sm" id="f-prs-s" onchange="renderPrs()">
             <option value="">Tous statuts</option>
             <option>Prospect</option><option>Contacté</option><option>Intéressé</option><option>Converti</option><option>Perdu</option>
@@ -436,7 +437,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
         </div>
         <div class="stats" id="caisse-stats"></div>
         <div class="filters">
-          <input class="inp inp-sm" id="f-ca-q" placeholder="🔍 Recherche..." oninput="deb('f-ca-q',renderCaisse)" style="width:170px"/>
+          <input class="inp inp-sm" id="f-ca-q" placeholder="🔍 Recherche..." oninput="debRender('renderCaisse', renderCaisse)" style="width:170px"/>
           <select class="inp inp-sm" id="f-ca-t" onchange="renderCaisse()">
             <option value="">Tous</option><option value="in">Entrées</option><option value="out">Sorties</option>
           </select>
@@ -450,7 +451,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <!-- CLIENTS -->
       <div class="page" id="page-clients">
         <div class="ph"><h2>👥 Clients</h2><button class="btn btn-ghost btn-sm" onclick="loadClients()">🔄</button></div>
-        <div class="filters"><input class="inp inp-sm" id="f-cli-q" placeholder="🔍 Recherche..." oninput="deb('f-cli-q',renderClients)" style="width:200px"/></div>
+        <div class="filters"><input class="inp inp-sm" id="f-cli-q" placeholder="🔍 Recherche..." oninput="debRender('renderClients', renderClients)" style="width:200px"/></div>
         <div class="twrap"><table>
           <thead><tr><th>N°</th><th>Nom</th><th>Adresse</th><th>Téléphone</th><th>Wilaya</th><th>Date</th></tr></thead>
           <tbody id="tb-clients"></tbody>
@@ -460,7 +461,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <!-- STOCK -->
       <div class="page" id="page-stock">
         <div class="ph"><h2>📦 Stock</h2><button class="btn btn-ghost btn-sm" onclick="loadStock()">🔄</button></div>
-        <div class="filters"><input class="inp inp-sm" id="f-stk-q" placeholder="🔍 Recherche..." oninput="deb('f-stk-q',renderStock)" style="width:200px"/></div>
+        <div class="filters"><input class="inp inp-sm" id="f-stk-q" placeholder="🔍 Recherche..." oninput="debRender('renderStock', renderStock)" style="width:200px"/></div>
         <div class="twrap"><table>
           <thead><tr><th>Désignation</th><th>Réf</th><th>Qté</th><th>Alerte</th><th>Prix achat</th><th>Prix vente</th><th>Famille</th></tr></thead>
           <tbody id="tb-stock"></tbody>
@@ -477,7 +478,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
           </div>
         </div>
         <div class="filters">
-          <input class="inp inp-sm" id="f-notes-q" placeholder="🔍 Recherche..." oninput="deb('f-notes-q',renderNotes)" style="width:180px"/>
+          <input class="inp inp-sm" id="f-notes-q" placeholder="🔍 Recherche..." oninput="debRender('renderNotes', renderNotes)" style="width:180px"/>
           <select class="inp inp-sm" id="f-notes-t" onchange="renderNotes()">
             <option value="">Toutes</option>
             <option value="public">🌐 Public</option>
@@ -503,7 +504,7 @@ tbody td{padding:.5rem .85rem;font-size:.8rem;vertical-align:middle}
       <button class="mob-menu-close" onclick="closeMobMenu()">×</button>
     </div>
     <div class="mob-menu-body">
-      <div class="mob-menu-item" id="mm-tdb" onclick="goPage('tdb');closeMobMenu()">📊 <span>Table de Bord</span></div>
+      <div class="mob-menu-item" onclick="goPage('tdb');closeMobMenu()">📊 <span>Table de Bord</span></div>
       <div class="mob-menu-sep">Activités</div>
       <div class="mob-menu-item" id="mm-cmd" onclick="goPage('cmd');closeMobMenu()">📦 <span>Commande</span><span class="mob-menu-badge" id="mnb-cmd" style="display:none"></span></div>
       <div class="mob-menu-item" id="mm-tkt" onclick="goPage('tkt');closeMobMenu()">🎫 <span>Ticket IT</span><span class="mob-menu-badge" id="mnb-tkt" style="display:none"></span></div>
@@ -761,17 +762,6 @@ const S_TASK = [{k:'NV',c:'#f59e0b'},{k:'En cours',c:'#3b82f6'},{k:'En Att',c:'#
 const ACC_MAP = {cmd:'acces_commande',tkt:'acces_ticket',task:'acces_task',prs:'acces_prosp',caisse:'acces_caisse',clients:'acces_clients',stock:'acces_stock'};
 
 // ════════════════════════════════════════════════════════
-// DEBOUNCE (perf) — delays search/filter re-renders while typing
-// so the UI doesn't rebuild the whole board on every keystroke.
-// ════════════════════════════════════════════════════════
-const _debTimers = {};
-function deb(key, fn, wait) {
-  wait = wait || 220;
-  clearTimeout(_debTimers[key]);
-  _debTimers[key] = setTimeout(fn, wait);
-}
-
-// ════════════════════════════════════════════════════════
 // API
 // ════════════════════════════════════════════════════════
 async function call(action, body) {
@@ -921,7 +911,7 @@ function startApp() {
   // Hide TDB nav if no TABLE_BORD access
   if (CU.type !== 'admin' && String(CU.TABLE_BORD||'yes').toLowerCase() === 'no') {
     const el = $('na-tdb'); if (el) el.style.display = 'none';
-    const mel = document.getElementById('mm-tdb'); if (mel) mel.style.display = 'none';
+    const mel = document.getElementById('mn-tdb'); if (mel) mel.style.display = 'none';
   }
   loadAll();
 }
@@ -961,12 +951,6 @@ function goPage(p) {
   $('page-' + p)?.classList.add('on');
   $('na-' + p)?.classList.add('on');
   curPage = p;
-  // Populate filter <select> option lists only on navigation/data-load,
-  // never inside the search-render path (avoids rebuilding <select> on every keystroke)
-  if (p === 'cmd')  populateCmdFilters();
-  if (p === 'tkt')  populateTktFilters();
-  if (p === 'task') populateTaskFilters();
-  if (p === 'prs')  populatePrsFilters();
   if (p === 'tdb')     renderTDB();
   if (p === 'cmd')     renderCmd();
   if (p === 'tkt')     renderTkt();
@@ -984,25 +968,21 @@ function goPage(p) {
 // ════════════════════════════════════════════════════════
 async function loadAll() {
   showL('Chargement des données...');
-  const [r1,rt,rc,rcl,rst,ru,rn] = await Promise.all([
-    call('getSheet', {sheet:'Feuille 1'}),
-    call('getSheet', {sheet:'TASK'}),
-    call('getSheet', {sheet:'caisse'}),
-    call('getSheet', {sheet:'CLIENTS'}),
-    call('getSheet', {sheet:'STOCK'}),
-    call('getUsers'),
-    call('getSheet', {sheet:'note'}),
-  ]);
+  // 1 SEUL appel = 1 SEUL cold start (au lieu de 7)
+  const r = await call('getAll');
   hideL();
-  if (r1.ok)  F1      = r1.rows;
-  if (rt.ok)  TASKS   = rt.rows;
-  if (rc.ok)  CAISSE  = rc.rows;
-  if (rcl.ok) CLIENTS = rcl.rows;
-  if (rst.ok) STOCK   = rst.rows;
-  if (ru.ok)  USERS   = ru.users;
-  if (rn.ok)  NOTES   = rn.rows;
+  if (!r.ok) { toast(r.error || 'Erreur serveur', 'e'); return; }
+  F1      = r.f1     || [];
+  TASKS   = r.tasks  || [];
+  CAISSE  = r.caisse || [];
+  NOTES   = r.notes  || [];
+  // Données rarement modifiées : cache session
+  STOCK   = cacheGet('stock',   30) || r.stock   || [];
+  CLIENTS = cacheGet('clients', 30) || r.clients || [];
+  USERS   = cacheGet('users',   10) || r.users   || [];
+  cacheSet('stock', STOCK); cacheSet('clients', CLIENTS); cacheSet('users', USERS);
+  fillTdbUserSelect();
   fillUserSelects();
-  populateTdbUserSelect();
   updateBadges();
   // If user has no TDB access, go to first allowed page
   let startPage = curPage;
@@ -1013,11 +993,21 @@ async function loadAll() {
   goPage(startPage);
 }
 
-async function loadF1()     { showL('Chargement...'); const r=await call('getSheet',{sheet:'Feuille 1'}); hideL(); if(r.ok){F1=r.rows;updateBadges();populateCmdFilters();populateTktFilters();populatePrsFilters();goPage(curPage);} }
-async function loadTask()   { showL('Chargement...'); const r=await call('getSheet',{sheet:'TASK'});      hideL(); if(r.ok){TASKS=r.rows;updateBadges();populateTaskFilters();renderTask();} }
+async function loadF1()     { showL('Chargement...'); const r=await call('getSheet',{sheet:'Feuille 1'}); hideL(); if(r.ok){F1=r.rows;updateBadges();goPage(curPage);} }
+async function loadTask()   { showL('Chargement...'); const r=await call('getSheet',{sheet:'TASK'});      hideL(); if(r.ok){TASKS=r.rows;updateBadges();renderTask();} }
 async function loadCaisse() { showL('Chargement...'); const r=await call('getSheet',{sheet:'caisse'});   hideL(); if(r.ok){CAISSE=r.rows;renderCaisse();} }
-async function loadClients(){ showL('Chargement...'); const r=await call('getSheet',{sheet:'CLIENTS'});  hideL(); if(r.ok){CLIENTS=r.rows;renderClients();} }
-async function loadStock()  { showL('Chargement...'); const r=await call('getSheet',{sheet:'STOCK'});    hideL(); if(r.ok){STOCK=r.rows;renderStock();} }
+async function loadClients(){
+  const c = cacheGet('clients', 30);
+  if (c) { CLIENTS = c; renderClients(); return; }
+  showL('Chargement...'); const r=await call('getSheet',{sheet:'CLIENTS'});  hideL();
+  if(r.ok){CLIENTS=r.rows; cacheSet('clients', CLIENTS); renderClients();}
+}
+async function loadStock(){
+  const c = cacheGet('stock', 30);
+  if (c) { STOCK = c; renderStock(); return; }
+  showL('Chargement...'); const r=await call('getSheet',{sheet:'STOCK'});    hideL();
+  if(r.ok){STOCK=r.rows; cacheSet('stock', STOCK); renderStock();}
+}
 
 function updateBadges() {
   const show = (id, n) => { const el=$(id); if(el){el.textContent=n;el.style.display=n>0?'inline-block':'none';} };
@@ -1032,16 +1022,14 @@ function typ(r) { return String(r.TYPE||r.type||'COMMANDE').toUpperCase(); }
 // ════════════════════════════════════════════════════════
 // TABLE DE BORD
 // ════════════════════════════════════════════════════════
-// Populate the TDB user filter <select>. Called once after data loads,
-// NOT on every renderTDB() call (previously rebuilt on every keystroke).
-function populateTdbUserSelect() {
-  const userSel = document.getElementById('tdb-user');
-  if (!userSel) return;
-  const prev = userSel.value;
+// Remplit la liste des utilisateurs UNE SEULE FOIS
+function fillTdbUserSelect() {
+  const sel = $('tdb-user'); if (!sel) return;
+  const prev = sel.value;
   const names = [...new Set(USERS.map(u => u.NOM||u.nom||'').filter(Boolean))];
-  userSel.innerHTML = '<option value="">Tous les utilisateurs</option>'
+  sel.innerHTML = '<option value="">Tous les utilisateurs</option>'
     + names.map(n => '<option value="'+esc(n.toUpperCase())+'">'+esc(n)+'</option>').join('');
-  if (prev) userSel.value = prev;
+  if (prev) sel.value = prev;
 }
 
 function renderTDB() {
@@ -1054,6 +1042,8 @@ function renderTDB() {
   const todayOnly = document.getElementById('tdb-today')?.checked ?? true;
   const today   = new Date().toISOString().split('T')[0];
 
+  // (liste utilisateurs remplie une seule fois par fillTdbUserSelect)
+
   function matchDate(v) {
     const d = fmtDate(v);
     if (!d) return false;
@@ -1065,7 +1055,8 @@ function renderTDB() {
 
   function matchQ(r) {
     if (!q) return true;
-    return JSON.stringify(r).toLowerCase().includes(q);
+    if (r._q === undefined) r._q = JSON.stringify(r).toLowerCase();
+    return r._q.includes(q);
   }
 
   function matchUser(r) {
@@ -1102,7 +1093,7 @@ function renderTDB() {
   const visibleCols = colF ? cols.filter(col => col.key === colF) : cols;
 
   const wrap = $('tdb-content');
-  const frag = document.createDocumentFragment();
+  wrap.innerHTML = '';
   visibleCols.filter(col => col.show).forEach(col => {
     const div = document.createElement('div');
     div.className = 'kcol';
@@ -1122,17 +1113,13 @@ function renderTDB() {
     const cards = document.createElement('div');
     cards.className = 'kcards';
     if (col.data.length) {
-      const cardsFrag = document.createDocumentFragment();
-      col.data.forEach(r => cardsFrag.appendChild(col.render(r)));
-      cards.appendChild(cardsFrag);
+      col.data.forEach(r => cards.appendChild(col.render(r)));
     } else {
       cards.innerHTML = '<div class="empty" style="padding:.6rem;font-size:.72rem">Aucun élément</div>';
     }
     div.appendChild(cards);
-    frag.appendChild(div);
+    wrap.appendChild(div);
   });
-  wrap.innerHTML = '';
-  wrap.appendChild(frag);
 }
 
 function resetTdbFilters() {
@@ -1156,7 +1143,7 @@ function buildKanban(containerId, items, statuses, cardFn, dateField) {
   dateField = dateField || 'date';
   const board = $(containerId);
   if (!board) return;
-  const frag = document.createDocumentFragment();
+  board.innerHTML = '';
   const thisMonth = new Date().toISOString().substring(0,7); // YYYY-MM
 
   statuses.forEach(s => {
@@ -1184,17 +1171,13 @@ function buildKanban(containerId, items, statuses, cardFn, dateField) {
     const cards = document.createElement('div');
     cards.className = 'kcards';
     if (colItems.length) {
-      const cardsFrag = document.createDocumentFragment();
-      colItems.forEach(r => cardsFrag.appendChild(cardFn(r)));
-      cards.appendChild(cardsFrag);
+      colItems.forEach(r => cards.appendChild(cardFn(r)));
     } else {
       cards.innerHTML = '<div style="color:var(--dim);font-size:.7rem;text-align:center;padding:.4rem">vide</div>';
     }
     col.appendChild(cards);
-    frag.appendChild(col);
+    board.appendChild(col);
   });
-  board.innerHTML = '';
-  board.appendChild(frag);
 }
 
 // ─── Card builders ───────────────────────────────────
@@ -1264,18 +1247,12 @@ function cardCaisse(r) {
 // ════════════════════════════════════════════════════════
 function applyFilters(data, q, sKey, sVal, cKey, cVal, d1, d2) {
   let d = [...data].reverse(); // latest first
-  if (q)   d = d.filter(r => JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
+  if (q)   d = d.filter(r => { if (r._q===undefined) r._q = JSON.stringify(r).toLowerCase(); return r._q.includes(q.toLowerCase()); });
   if (sVal) d = d.filter(r => String(r[sKey]||'').trim().toLowerCase() === String(sVal).toLowerCase());
   if (cVal) d = d.filter(r => (r[cKey]||'').toUpperCase() === cVal.toUpperCase());
   if (d1)  d = d.filter(r => { const dd=fmtDate(r.Date||r.date||''); return dd && dd >= d1; });
   if (d2)  d = d.filter(r => { const dd=fmtDate(r.Date||r.date||''); return dd && dd <= d2; });
   return d;
-}
-
-// Populate the "commercial" filter <select> for Commandes.
-// Called once on load/navigation — not on every renderCmd() call.
-function populateCmdFilters() {
-  fillSel('f-cmd-c', F1.filter(r=>typ(r)==='COMMANDE').map(r=>r.commercial||r.Commercial||''));
 }
 
 function renderCmd() {
@@ -1285,20 +1262,9 @@ function renderCmd() {
     'commercial', gv('f-cmd-c'),
     gv('f-cmd-d1'), gv('f-cmd-d2')
   );
+  // fill commercial select
+  fillSel('f-cmd-c', F1.filter(r=>typ(r)==='COMMANDE').map(r=>r.commercial||r.Commercial||''));
   buildKanban('board-cmd', data, S_CMD, cardF1);
-}
-
-// Populate the "technicien" filter <select> for Tickets.
-function populateTktFilters() {
-  let src = F1.filter(r => typ(r)==='TICKET');
-  if (CU && CU.type !== 'admin' && String(CU.acces_obj||'no').toLowerCase() !== 'yes') {
-    src = src.filter(r => {
-      const t = String(r.technicien||r.Technicien||'').trim().toUpperCase();
-      const co = String(r.commercial||r.Commercial||'').trim().toUpperCase();
-      return t === CU.nom.toUpperCase() || co === CU.nom.toUpperCase();
-    });
-  }
-  fillSel('f-tkt-t', src.map(r=>r.technicien||''));
 }
 
 function renderTkt() {
@@ -1313,20 +1279,8 @@ function renderTkt() {
   }
   const data = applyFilters(src, gv('f-tkt-q'), 'Statu', gv('f-tkt-s'),
     'technicien', gv('f-tkt-t'), gv('f-tkt-d1'), gv('f-tkt-d2'));
+  fillSel('f-tkt-t', src.map(r=>r.technicien||''));
   buildKanban('board-tkt', data, S_TKT, cardF1);
-}
-
-// Populate the "attribuer" filter <select> for Tasks.
-function populateTaskFilters() {
-  let src = [...TASKS];
-  if (CU && CU.type !== 'admin' && String(CU.acces_obj||'no').toLowerCase() !== 'yes') {
-    src = src.filter(r => {
-      const a = String(r.attribuer||'').trim().toUpperCase();
-      const co = String(r.commercial||'').trim().toUpperCase();
-      return a === CU.nom.toUpperCase() || co === CU.nom.toUpperCase();
-    });
-  }
-  fillSel('f-task-a', src.map(r=>r.attribuer||''));
 }
 
 function renderTask() {
@@ -1347,20 +1301,8 @@ function renderTask() {
   if (af) data = data.filter(r => (r.attribuer||'') === af);
   if (d1) data = data.filter(r => { const d=fmtDate(r.date||r.Date||''); return d && d >= d1; });
   if (d2) data = data.filter(r => { const d=fmtDate(r.date||r.Date||''); return d && d <= d2; });
+  fillSel('f-task-a', src.map(r=>r.attribuer||''));
   buildKanban('board-task', data, S_TASK, cardTask, 'date');
-}
-
-// Populate the "commercial" filter <select> for Prospection.
-function populatePrsFilters() {
-  let src = F1.filter(r => typ(r)==='PROSPECTION');
-  if (CU && CU.type !== 'admin' && String(CU.acces_obj||'no').toLowerCase() !== 'yes') {
-    src = src.filter(r => {
-      const co = String(r.commercial||r.Commercial||'').trim().toUpperCase();
-      const te = String(r.technicien||'').trim().toUpperCase();
-      return co === CU.nom.toUpperCase() || te === CU.nom.toUpperCase();
-    });
-  }
-  fillSel('f-prs-c', src.map(r=>r.commercial||''));
 }
 
 function renderPrs() {
@@ -1375,6 +1317,7 @@ function renderPrs() {
   }
   const data = applyFilters(src, gv('f-prs-q'), 'Statu', gv('f-prs-s'),
     'commercial', gv('f-prs-c'), '', '');
+  fillSel('f-prs-c', src.map(r=>r.commercial||''));
   buildKanban('board-prs', data, S_PRS, cardF1);
 }
 
@@ -1500,10 +1443,12 @@ function copyNoteBtn(btn) {
 }
 
 async function loadNotes() {
+  const c = cacheGet('notes', 5);
+  if (c) { NOTES = c; renderNotes(); return; }
   showL('Chargement notes...');
   const r = await call('getSheet', {sheet:'note'});
   hideL();
-  if (r.ok) { NOTES = r.rows; renderNotes(); }
+  if (r.ok) { NOTES = r.rows; cacheSet('notes', NOTES); renderNotes(); }
   else toast(r.error,'e');
 }
 
@@ -1592,7 +1537,9 @@ async function saveNote() {
   if (res.ok) {
     toast(isEdit?'Mis à jour ✓':'Ajouté ✓','s');
     closeOv('ov-note');
-    loadNotes();
+    localUpsert(NOTES, ri, row, res);
+    cacheSet('notes', NOTES);
+    renderNotes();
   } else toast(res.error||'Erreur','e');
 }
 
@@ -1758,17 +1705,9 @@ function dupliquerCommande() {
     hideL();
     if (res.ok) {
       toast('Commande dupliquée ✓ — ouverture...', 's');
-      const r2 = await call('getSheet', {sheet:'Feuille 1'});
-      if (r2.ok) {
-        F1 = r2.rows;
-        updateBadges();
-        const newRow = F1.slice().sort((a,b) => b._rowIndex - a._rowIndex)
-          .find(r => typ(r)==='COMMANDE' && (r.Client||r.client||'')===(orig.Client||orig.client||''));
-        if (newRow) {
-          goPage('cmd');
-          setTimeout(() => openModalF1(parseInt(newRow._rowIndex), 'COMMANDE'), 200);
-        }
-      }
+      const newRi = localUpsert(F1, null, row, res);
+      updateBadges(); goPage('cmd');
+      setTimeout(() => openModalF1(parseInt(newRi), 'COMMANDE'), 200);
     } else toast(res.error||'Erreur','e');
   }, 150);
 }
@@ -1799,17 +1738,9 @@ async function cvtToTask() {
     hideL();
     if (res.ok) {
       toast('Task créée ✓ — ouverture...', 's');
-      const r2 = await call('getSheet', {sheet:'TASK'});
-      if (r2.ok) {
-        TASKS = r2.rows;
-        updateBadges();
-        const newTask = TASKS.slice().sort((a,b) => b._rowIndex - a._rowIndex)
-          .find(t => (t.client||'')===(orig.Client||orig.client||''));
-        if (newTask) {
-          goPage('task');
-          setTimeout(() => openModalTask(parseInt(newTask._rowIndex)), 200);
-        }
-      }
+      const newRi = localUpsert(TASKS, null, row, res);
+      updateBadges(); goPage('task');
+      setTimeout(() => openModalTask(parseInt(newRi)), 200);
     } else toast(res.error||'Erreur','e');
   }, 150);
 }
@@ -1855,21 +1786,10 @@ async function doCvtType(orig, t) {
   hideL();
   if (res.ok) {
     toast(t + ' créé ✓ — ouverture pour modification...', 's');
-    // Reload F1 then open the new row for editing
-    const r2 = await call('getSheet', {sheet:'Feuille 1'});
-    if (r2.ok) {
-      F1 = r2.rows;
-      updateBadges();
-      // The new row is the last one added — find it by highest _rowIndex matching our data
-      const newRow = F1.slice().sort((a,b) => b._rowIndex - a._rowIndex)
-        .find(r => typ(r)===t && (r.Client||r.client||'')===(orig.Client||orig.client||''));
-      if (newRow) {
-        // Navigate to the right page first
-        goPage(t==='TICKET'?'tkt':t==='PROSPECTION'?'prs':'cmd');
-        // Small delay then open modal
-        setTimeout(() => openModalF1(parseInt(newRow._rowIndex), t), 200);
-      }
-    }
+    const newRi = localUpsert(F1, null, row, res);
+    updateBadges();
+    goPage(t==='TICKET'?'tkt':t==='PROSPECTION'?'prs':'cmd');
+    setTimeout(() => openModalF1(parseInt(newRi), t), 200);
   } else {
     toast(res.error||'Erreur lors de la création', 'e');
   }
@@ -1923,7 +1843,8 @@ async function saveF1() {
   if (res.ok) {
     toast(isEdit ? 'Mis à jour ✓' : 'Ajouté ✓', 's');
     closeOv('ov-f1');
-    loadF1();
+    localUpsert(F1, ri, row, res);   // ← plus de rechargement complet
+    refreshCurrent();
   } else {
     toast(res.error || 'Erreur', 'e');
   }
@@ -1993,7 +1914,7 @@ async function saveTask() {
   if (progChanged) row.date = new Date().toISOString().split('T')[0];
 
   const res = await call(isEdit?'updateTask':'addTask', isEdit?{rowIndex:ri,row}:{row});
-  if (res.ok) { toast(isEdit?'Mis à jour ✓':'Ajouté ✓','s'); closeOv('ov-task'); loadTask(); }
+  if (res.ok) { toast(isEdit?'Mis à jour ✓':'Ajouté ✓','s'); closeOv('ov-task'); localUpsert(TASKS, ri, row, res); refreshCurrent(); }
   else toast(res.error||'Erreur','e');
 }
 
@@ -2042,7 +1963,7 @@ async function saveCaisse() {
     Groupe: 'ANTIC',
   };
   const res = await call(isEdit?'updateCaisse':'addCaisse', isEdit?{rowIndex:ri,row}:{row});
-  if (res.ok) { toast(isEdit?'Mis à jour ✓':'Ajouté ✓','s'); closeOv('ov-caisse'); loadCaisse(); }
+  if (res.ok) { toast(isEdit?'Mis à jour ✓':'Ajouté ✓','s'); closeOv('ov-caisse'); localUpsert(CAISSE, ri, row, res); renderCaisse(); }
   else toast(res.error||'Erreur','e');
 }
 
@@ -2103,7 +2024,7 @@ async function saveUser() {
   if (res.ok) {
     toast('Enregistré ✓','s'); closeOv('ov-user');
     const ru = await call('getUsers');
-    if (ru.ok) { USERS = ru.users; fillUserSelects(); populateTdbUserSelect(); renderUsers(); }
+    if (ru.ok) { USERS = ru.users; cacheSet('users', USERS); fillTdbUserSelect(); fillUserSelects(); renderUsers(); }
   } else toast(res.error||'Erreur','e');
 }
 
@@ -2151,6 +2072,40 @@ function fillSel(id, values) {
 // ════════════════════════════════════════════════════════
 function $(id) { return document.getElementById(id); }
 function gv(id) { return ($(''+id)?.value||'').trim(); }
+
+// ── DEBOUNCE (recherche) ─────────────────────────────
+const _dq = {};
+function debRender(key, fn, ms) {
+  clearTimeout(_dq[key]);
+  _dq[key] = setTimeout(fn, ms || 250);
+}
+
+// ── SESSION CACHE ────────────────────────────────────
+function cacheSet(key, data) {
+  try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), data })); } catch(_) {}
+}
+function cacheGet(key, ttlMin) {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    if (Date.now() - o.t > ttlMin * 60000) return null;
+    return o.data;
+  } catch(_) { return null; }
+}
+
+// ── SYNC LOCAL (évite le rechargement complet du sheet) ──
+function localUpsert(arr, ri, row, res) {
+  if (ri !== null && ri !== undefined && !isNaN(ri)) {
+    const i = arr.findIndex(x => parseInt(x._rowIndex) === ri);
+    if (i > -1) { Object.assign(arr[i], row); arr[i]._q = undefined; return arr[i]._rowIndex; }
+  }
+  const newRi = (res && res.rowIndex ? res.rowIndex
+    : (arr.length ? Math.max(...arr.map(r => +r._rowIndex)) + 2 : 2)) - 1;
+  arr.push(Object.assign({ _rowIndex: newRi }, row));
+  return newRi;
+}
+function refreshCurrent() { updateBadges(); goPage(curPage); }
 
 function openOv(id)  { $(id).classList.add('on'); }
 function closeOv(id) { $(id).classList.remove('on'); }
@@ -2298,9 +2253,12 @@ function showMobAdminItems() {
   if (usr) usr.style.display = 'flex';
 }
 
-// Override updateBadges to also update mobile (same as original app)
+// Override updateBadges to also update mobile
+const _origUpdateBadges = updateBadges;
 window.updateBadges = function() { updateBadgesAll(); };
 
+// On startApp, show admin items in mob menu
+const _origStartApp = startApp;
 // Patch goPage to also update mobile nav
 const _origGoPage = goPage;
 window.goPage = function(p) {
