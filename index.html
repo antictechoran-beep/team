@@ -979,7 +979,8 @@ async function loadAll() {
   // Données rarement modifiées : cache session
   STOCK   = cacheGet('stock',   30) || r.stock   || [];
   CLIENTS = cacheGet('clients', 30) || r.clients || [];
-  USERS   = cacheGet('users',   10) || r.users   || [];
+  // USERS TOUJOURS frais : l'app doit connaître les permissions de chaque user
+  USERS   = r.users || [];
   cacheSet('stock', STOCK); cacheSet('clients', CLIENTS); cacheSet('users', USERS);
   fillTdbUserSelect();
   fillUserSelects();
@@ -1587,6 +1588,8 @@ function resetF(p) {
 let f1StatusList = [];
 
 function openModalF1(ri, type) {
+  refreshUsers();              // ← liste users toujours à jour
+  fillUserSelects();           // ← garantit les options même si modal ouverte vite
   const isEdit = ri !== null && ri !== undefined && !isNaN(ri);
   // Find row
   let r = {};
@@ -1866,6 +1869,8 @@ async function delF1() {
 // MODAL TASK
 // ════════════════════════════════════════════════════════
 function openModalTask(ri) {
+  refreshUsers();              // ← liste users toujours à jour
+  fillUserSelects();
   const isEdit = ri !== null && !isNaN(parseInt(ri));
   const r = isEdit ? TASKS.find(x => parseInt(x._rowIndex) === ri) || {} : {};
   $('task-title').textContent = isEdit ? 'Modifier task' : 'Nouvelle task';
@@ -1932,6 +1937,8 @@ async function delTask() {
 // MODAL CAISSE
 // ════════════════════════════════════════════════════════
 function openModalCaisse(ri) {
+  refreshUsers();
+  fillUserSelects();
   const isEdit = ri !== null && !isNaN(parseInt(ri));
   const r = isEdit ? CAISSE.find(x => parseInt(x._rowIndex) === ri) || {} : {};
   $('caisse-title').textContent = isEdit ? 'Modifier opération' : 'Nouvelle opération';
@@ -2048,6 +2055,16 @@ async function delUserRow(ri) {
 // ════════════════════════════════════════════════════════
 // SELECTS
 // ════════════════════════════════════════════════════════
+// Rafraîchit la liste des utilisateurs + tous les selects (permissions à jour)
+async function refreshUsers() {
+  const r = await call('getUsers');
+  if (!r.ok) return;
+  USERS = r.users || [];
+  cacheSet('users', USERS);
+  fillTdbUserSelect();
+  fillUserSelects();
+}
+
 function fillUserSelects() {
   const names = USERS.map(u=>u.NOM||u.nom||'').filter(Boolean);
   ['f1-com','f1-tech','caisse-user','task-attrib'].forEach(id => {
