@@ -895,7 +895,11 @@ async function loadOrders(){
   $('#tbody').innerHTML='<tr><td colspan="11" class="empty">جارٍ التحميل...</td></tr>';
   try{
     DATA = await api('orders.read');
-    if(!CFG.map || !Object.keys(CFG.map).length){ CFG.map=guessMap(DATA.headers); if(can('settings')) api('settings.save',{settings:{map:CFG.map}}).catch(()=>{}); }
+    // ربط الأعمدة: الحقول الجديدة (مثل المسؤول والتقني) تُربط تلقائياً دون تغيير الربط القديم
+    CFG.map=CFG.map||{}; const used=new Set(Object.values(CFG.map)); const g=guessMap(DATA.headers.filter(h=>!used.has(h))); let add=false;
+    Object.entries(g).forEach(([k,h])=>{ if(!CFG.map[k]){ CFG.map[k]=h; add=true; } });
+    FIELDS.filter(f=>f.def && !CFG.map[f.k] && DATA.headers.includes(f.def) && !Object.values(CFG.map).includes(f.def)).forEach(f=>{ CFG.map[f.k]=f.def; add=true; });
+    if(add && can('settings')) api('settings.save',{settings:{map:CFG.map}}).catch(()=>{});
     ORDERS = DATA.rows.map(toOrder).reverse();
     ORDERS_LOADED=true; SEL.clear(); render();
   }catch(e){ $('#tbody').innerHTML=`<tr><td colspan="11" class="empty">${esc(e.message)}</td></tr>`; }
