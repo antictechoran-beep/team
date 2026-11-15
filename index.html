@@ -178,6 +178,10 @@ code,.code{font-family:ui-monospace,Menlo,monospace;background:var(--bg);padding
 pre.code{display:block;padding:12px;overflow:auto;max-height:240px;font-size:12px;text-align:left}
 .pdf-frame{width:100%;height:70vh;border:0;border-radius:10px;background:var(--bg)}
 
+#v-orders table{min-width:1180px}
+#v-orders td{white-space:nowrap}
+#v-orders td:nth-child(3),#v-orders td:nth-child(6){white-space:normal;min-width:120px}
+#v-orders .toolbar select{max-width:200px}
 /* caisse */
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
 .kpi{background:#fff;border:1px solid var(--ln);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
@@ -293,15 +297,18 @@ pre.code{display:block;padding:12px;overflow:auto;max-height:240px;font-size:12p
         <div class="toolbar">
           <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="بحث بالاسم، الهاتف، المنتج، رقم التتبع..."></div>
           <select id="fWilaya"><option value="">كل الولايات</option></select>
-          <select id="fAssigned"></select>
+          <select id="fPeriod"><option value="">📅 كل التواريخ</option><option value="today">اليوم</option><option value="yesterday">أمس</option><option value="week">هذا الأسبوع</option><option value="month">هذا الشهر</option><option value="last">الشهر الماضي</option><option value="year">هذه السنة</option><option value="custom">فترة مخصصة...</option></select>
+          <span id="fCustom" class="hidden" style="display:inline-flex;gap:6px"><input type="date" id="fFrom" class="btn"><input type="date" id="fTo" class="btn"></span>
+          <select id="fConf"></select>
+          <select id="fTech"></select>
           <select id="fTrk"><option value="">الكل</option><option value="no">غير مرسلة</option><option value="yes">مرسلة (لها رقم تتبع)</option></select>
         </div>
         <div class="bulk hidden" id="bulk">
           <b id="bulkN">0</b> محددة
           <button class="btn sm pri" id="bSend" data-perm="orders_ship">إرسال إلى شركة التوصيل</button>
-          <select id="bAssign" data-perm="orders_edit"></select>
-          <select id="bTech" data-perm="orders_edit"></select>
-          <select id="bStatus" data-perm="orders_edit"><option value="">تغيير الحالة إلى...</option></select>
+          <select id="bAssign" data-perm="orders_view"></select>
+          <select id="bTech" data-perm="orders_view"></select>
+          <select id="bStatus" data-perm="orders_view"><option value="">تغيير الحالة إلى...</option></select>
           <button class="btn sm" id="bTrack" data-perm="orders_ship">تحديث حالات التوصيل</button>
           <button class="btn sm" id="bShip" data-perm="orders_ship">تأكيد الشحن</button>
           <button class="btn sm" id="bLabel" data-perm="orders_ship">البوردرو</button>
@@ -574,7 +581,7 @@ const FIELDS = [
 ];
 const GUESS_ORDER = ['confirmed_by','confirmed_at','prepared_by','prepared_at','tech','assigned','dstatus','tracking','phone2','delivery','ref','date','name','phone','wilaya','commune','address','product','qty','total','note','status'];
 const COLORS = [['#e0ecff','#1d4ed8'],['#dcfce7','#15803d'],['#fef3c7','#b45309'],['#ede9fe','#6d28d9'],['#fee2e2','#b91c1c'],['#ffedd5','#c2410c'],['#ccfbf1','#0f766e'],['#fce7f3','#be185d'],['#e5e7eb','#374151']];
-const PERM_LABELS = {orders_view:'عرض الطلبيات (المسندة إليه وغير المسندة)',orders_all:'عرض وإسناد كل الطلبيات',orders_edit:'إضافة وتعديل الطلبيات',orders_prepare:'التقني: تحضير الطلبيات المحوّلة إليه',orders_ship:'الإرسال لشركة التوصيل',prospects:'الزبائن المحتملون',tasks:'المهام والمواعيد',tasks_all:'رؤية وإسناد مهام الجميع',templates:'إدارة قوالب الرسائل',caisse:'الصندوق: عرض وتسجيل',caisse_admin:'الصندوق: تعديل الكل والاستيراد',fees:'أسعار التوصيل',settings:'الإعدادات',users:'إدارة المستخدمين'};
+const PERM_LABELS = {orders_view:'عرض الطلبيات وتغيير الحالة والمسؤول والتقني',orders_edit:'إضافة وتعديل الطلبيات',orders_prepare:'التقني: تحضير الطلبيات المحوّلة إليه',orders_ship:'الإرسال لشركة التوصيل',prospects:'الزبائن المحتملون',tasks:'المهام والمواعيد',tasks_all:'رؤية مهام كل الفريق',templates:'إدارة قوالب الرسائل',caisse:'الصندوق: عرض وتسجيل',caisse_admin:'الصندوق: تعديل الكل والاستيراد',fees:'أسعار التوصيل',settings:'الإعدادات',users:'إدارة المستخدمين'};
 const TASK_STATUSES = ['لم تبدأ','قيد التنفيذ','منجزة','ملغاة'];
 const TASK_TYPES = ['مهمة','موعد','متابعة','اتصال'];
 const PRIORITIES = [['high','عالية'],['mid','متوسطة'],['low','منخفضة']];
@@ -609,7 +616,7 @@ let LS = loadLocal();
 if(!IN_GAS && SCRIPT_URL) LS.url = SCRIPT_URL;
 let ME = null, CFG = {}, USERS = [], TEMPLATES = [], PROSPECTS = [], TASKS = [];
 let DATA = {headers:[],rows:[]}, ORDERS = [], ORDERS_LOADED = false;
-let VIEW = {status:'',q:'',wilaya:'',trk:'',assigned:'',page:0}; let SEL = new Set();
+let VIEW = {status:'',q:'',wilaya:'',trk:'',conf:'',tech:'',period:'',from:'',to:'',page:0}; let SEL = new Set();
 let PV = {status:'',q:'',assigned:'',follow:''};
 let TV = {mode:'table',status:'',q:'',type:'',assigned:'',month:null,day:null};
 let FEES = null; const COMMUNES = {};
@@ -624,6 +631,7 @@ const statusList = () => { const l=list(CFG.statuses); [CFG.preparing,CFG.prepar
 const techs = () => USERS.filter(u=>u.tech);
 const me = () => ME.user.username;
 const isTechOnly = () => can('orders_prepare') && !can('orders_edit') && !can('orders_ship');
+const canFollow = () => can('orders_view');
 const pStatusList = () => list(CFG.prospectStatuses);
 
 /* ================= أدوات ================= */
@@ -750,7 +758,7 @@ async function start(){
   $('#weakBanner').classList.toggle('hidden',!ME.user.weak);
   $('#nav').innerHTML = NAV.filter(n=>can(n.perm)).map(n=>`<a data-v="${n.v}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${n.icon}</svg><span>${n.label}</span><i class="cnt" id="cnt-${n.v}" style="font-style:normal"></i></a>`).join('');
   $$('#nav a').forEach(a=>a.onclick=()=>{ location.hash=a.dataset.v; });
-  $$('[data-perm]').forEach(el=>el.classList.toggle('hidden',!can(el.dataset.perm)));
+  $$('[data-perm]').forEach(el=>el.classList.toggle('hidden',!el.dataset.perm.split('|').some(can)));
   try{ USERS = await api('users.names'); }catch(e){ USERS=[]; }
   try{ TEMPLATES = await api('table.list',{table:'templates'}); }catch(e){ TEMPLATES=[]; }
   ORDERS_LOADED=false; PROSPECTS=[]; TASKS=[]; CX=[]; CX_LOADED=false;
@@ -760,12 +768,14 @@ async function start(){
   if(can('prospects')) loadProspects(true);
 }
 function fillFilters(){
-  $('#fAssigned').innerHTML='<option value="">كل المسؤولين</option><option value="_me">طلبياتي</option>'+(can('orders_prepare')?'<option value="_tech">للتحضير عندي</option>':'')+'<option value="_none">غير مسندة</option>'+(can('orders_all')?'<optgroup label="المسؤول">'+USERS.map(u=>`<option value="${esc(u.username)}">${esc(u.name||u.username)}</option>`).join('')+'</optgroup><optgroup label="التقني">'+techs().map(u=>`<option value="tech:${esc(u.username)}">🔧 ${esc(u.name||u.username)}</option>`).join('')+'</optgroup>':'');
-  $('#bTech').innerHTML='<option value="">تحويل للتقني...</option>'+techs().map(u=>`<option value="${esc(u.username)}">🔧 ${esc(u.name||u.username)}</option>`).join('')+'<option value="_none">— إلغاء التقني —</option>';
-  $('#bAssign').innerHTML='<option value="">إسناد إلى...</option>'+(can('orders_all')?USERS.map(u=>`<option value="${esc(u.username)}">${esc(u.name||u.username)}</option>`).join('')+'<option value="_none">— إلغاء الإسناد —</option>':`<option value="${esc(ME.user.username)}">لي أنا</option>`);
+  const uo=USERS.map(u=>`<option value="${esc(u.username)}">${esc(u.name||u.username)}</option>`).join('');
+  const to=techs().map(u=>`<option value="${esc(u.username)}">🔧 ${esc(u.name||u.username)}</option>`).join('');
+  $('#fConf').innerHTML='<option value="">📞 كل مسؤولي التأكيد</option><option value="'+esc(me())+'">طلبياتي</option><option value="_none">غير مسندة</option><optgroup label="الموظفون">'+uo+'</optgroup>';
+  $('#fTech').innerHTML='<option value="">🔧 كل التقنيين</option>'+(can('orders_prepare')?'<option value="'+esc(me())+'">للتحضير عندي</option>':'')+'<option value="_none">بدون تقني</option><optgroup label="التقنيون">'+to+'</optgroup>';
+  $('#bAssign').innerHTML='<option value="">📞 إسناد التأكيد إلى...</option>'+uo+'<option value="_none">— إلغاء الإسناد —</option>';
+  $('#bTech').innerHTML='<option value="">🔧 تحويل للتقني...</option>'+to+'<option value="_none">— إلغاء التقني —</option>';
   $('#pAssigned').innerHTML = '<option value="">كل المسؤولين</option>'+USERS.map(u=>`<option value="${esc(u.username)}">${esc(u.name||u.username)}</option>`).join('');
   $('#tAssigned').innerHTML = '<option value="">كل المسؤولين</option>'+USERS.map(u=>`<option value="${esc(u.username)}">${esc(u.name||u.username)}</option>`).join('');
-  $('#tAssigned').classList.toggle('hidden',!can('tasks_all'));
   $('#tType').innerHTML = '<option value="">كل الأنواع</option>'+TASK_TYPES.map(t=>`<option>${t}</option>`).join('');
 }
 function route(first){
@@ -896,13 +906,35 @@ function guessMap(headers){
   }
   return map;
 }
+function orderDay(o){
+  const s=String(o.date||'').trim(); let m=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+  if(m) return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
+  m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/); if(m) return `${m[3]}-${pad(m[2])}-${pad(m[1])}`;
+  return '';
+}
+function periodRange(p,from,to){
+  const t=new Date(), y=t.getFullYear(), m=t.getMonth();
+  switch(p){
+    case 'today': return [TODAY(),TODAY()];
+    case 'yesterday': { const d=new Date(t); d.setDate(t.getDate()-1); return [ymd(d),ymd(d)]; }
+    case 'week': { const s=new Date(t); s.setDate(t.getDate()-t.getDay()); return [ymd(s),TODAY()]; }
+    case 'month': return [ymd(new Date(y,m,1)),ymd(new Date(y,m+1,0))];
+    case 'last': return [ymd(new Date(y,m-1,1)),ymd(new Date(y,m,0))];
+    case 'year': return [`${y}-01-01`,`${y}-12-31`];
+    case 'custom': return [from||'0000',to||'9999'];
+    default: return null;
+  }
+}
+function inRange(d){ const r=periodRange(VIEW.period,VIEW.from,VIEW.to); if(!r) return true; return !!d && d>=r[0] && d<=r[1]; }
 function filtered(){
   const q=norm(VIEW.q), qd=VIEW.q.replace(/\D/g,'');
   return ORDERS.filter(o=>
     (!VIEW.status || o.status===VIEW.status) &&
     (!VIEW.wilaya || o._w===+VIEW.wilaya) &&
     (!VIEW.trk || (VIEW.trk==='yes'? !!o.tracking : !o.tracking)) &&
-    (!VIEW.assigned || (VIEW.assigned==='_none'? !o.assigned : VIEW.assigned==='_me'? o.assigned===me() : VIEW.assigned==='_tech'? o.tech===me() : VIEW.assigned.startsWith('tech:')? o.tech===VIEW.assigned.slice(5) : o.assigned===VIEW.assigned)) &&
+    (!VIEW.conf || (VIEW.conf==='_none'? !o.assigned && !o.confirmed_by : o.assigned===VIEW.conf || o.confirmed_by===VIEW.conf)) &&
+    (!VIEW.tech || (VIEW.tech==='_none'? !o.tech && !o.prepared_by : o.tech===VIEW.tech || o.prepared_by===VIEW.tech)) &&
+    inRange(orderDay(o)) &&
     (!q || norm([o.name,o.phone,o.phone2,o.product,o.tracking,o.ref,o.commune].join(' ')).includes(q) || (qd.length>3 && digits(o.phone).includes(qd)))
   );
 }
@@ -925,8 +957,8 @@ function render(){
       <td>${o._w?`<b>${o._w}</b> - ${esc(wName(o._w))}`:`<span style="color:var(--bad)">${esc(o.wilaya||'—')}</span>`}<div class="sub">${esc(o.commune)}${isDesk(o.delivery)===1?' · مكتب':''}</div></td>
       <td>${esc(o.product)}${o.qty&&o.qty!=='1'?` <span class="sub">×${esc(o.qty)}</span>`:''}</td>
       <td><b>${fmt(o.total)}</b></td>
-      <td>${(()=>{ const tOnly=!ed && can('orders_prepare') && o.tech===me(); const opts=tOnly?[o.status,CFG.preparing,CFG.prepared]:[o.status,...statusList()];
-        return `<select class="st-sel" style="${statusStyle(o.status)}" ${ed||tOnly?'':'disabled'}>${[...new Set(opts)].map(s=>`<option ${s===o.status?'selected':''}>${esc(s)}</option>`).join('')}</select>`; })()}</td>
+      <td>${(()=>{ const opts=[o.status,...statusList()];
+        return `<select class="st-sel" style="${statusStyle(o.status)}" ${canFollow()?'':'disabled'}>${[...new Set(opts)].map(s=>`<option ${s===o.status?'selected':''}>${esc(s)}</option>`).join('')}</select>`; })()}</td>
       <td style="font-size:12px;line-height:1.7">${o.assigned||o.confirmed_by?`<div title="المسؤول / أكّدها">📞 ${esc(userName(o.confirmed_by||o.assigned))}${o.confirmed_by?' <span class="okc">✓</span>':''}</div>`:'<span class="sub">غير مسندة</span>'}${o.tech||o.prepared_by?`<div title="التقني / حضّرها">🔧 ${esc(userName(o.prepared_by||o.tech))}${o.prepared_by?' <span class="okc">✓</span>':''}</div>`:''}</td>
       <td>${o.tracking?`<span class="trk">${esc(o.tracking)}</span>${o.dstatus?`<div class="sub">${esc(o.dstatus)}</div>`:''}`:'<span class="sub">—</span>'}</td>
       <td><div class="acts">
@@ -947,7 +979,6 @@ function renderBulk(){
 }
 const byRow = r => ORDERS.find(o=>o._row===+r);
 async function saveOrders(changes){
-  if(!can('orders_all') && can('orders_edit')) changes.forEach(c=>{ if(!c.o.assigned && c.values.assigned===undefined) c.values.assigned=ME.user.username; });
   const updates = changes.map(c=>{ const v={}; Object.entries(c.values).forEach(([k,val])=>v[colName(k)]=val); return {row:c.o._row,values:v}; });
   const res = await api('orders.update',{updates});
   changes.forEach((c,i)=>{ Object.assign(c.o,c.values); c.o._w=wilayaCode(c.o.wilaya);
@@ -1033,7 +1064,7 @@ async function showLabel(trks){
 function openOrder(o,opts={}){
   const isNew=!o; o = o || Object.assign({_row:0,status:statusList()[0]||'جديدة'},opts.prefill||{});
   if(isNew) o._w = wilayaCode(o.wilaya);
-  const ed = isNew || can('orders_edit'), sh=can('orders_ship');
+  const ed = isNew || can('orders_edit'), sh=can('orders_ship'), fol = ed || canFollow();
   const desk = isDesk(o.delivery); let curDesk = desk===null? +CFG.desk : desk; let opType=1;
   const m=modal(`
     <div class="mh"><h3>${isNew?(opts.title||'طلبية جديدة'):'الطلبية '+esc(o.ref||'#'+o._row)}</h3>${!isNew?`<button class="btn sm wa" id="oWa">${ICON.wa.replace('<svg','<svg class="ico"')} واتساب</button>`:''}<button class="close" data-x>×</button></div>
@@ -1052,11 +1083,6 @@ function openOrder(o,opts={}){
         <label class="f">المنتج<input name="product" value="${esc(o.product)}"></label>
         <label class="f">الكمية<input name="qty" type="number" min="1" value="${esc(o.qty||1)}"></label>
         <label class="f"><span class="req">المبلغ الإجمالي (يدفعه الزبون)</span><input name="total" type="number" value="${money(o.total)||''}"></label>
-        <label class="f">الحالة<select name="status">${[...new Set([o.status,...statusList()])].map(s=>`<option ${s===o.status?'selected':''}>${esc(s)}</option>`).join('')}</select></label>
-        <label class="f">المسؤول<select name="assigned">${can('orders_all')?userOptions(o.assigned,'— غير مسندة —'):`<option value="">— غير مسندة —</option><option value="${esc(ME.user.username)}" ${o.assigned===ME.user.username||isNew?'selected':''}>${esc(ME.user.name||ME.user.username)}</option>${o.assigned&&o.assigned!==ME.user.username?`<option value="${esc(o.assigned)}" selected>${esc(userName(o.assigned))}</option>`:''}`}</select></label>
-        <label class="f">التقني (للتحضير)<select name="tech"><option value="">— بدون —</option>${techs().map(u=>`<option value="${esc(u.username)}" ${u.username===o.tech?'selected':''}>🔧 ${esc(u.name||u.username)}</option>`).join('')}${o.tech&&!techs().some(u=>u.username===o.tech)?`<option selected value="${esc(o.tech)}">${esc(o.tech)}</option>`:''}</select></label>
-        <label class="f full">ملاحظة<input name="note" value="${esc(o.note)}"></label>
-        ${o.confirmed_by||o.prepared_by?`<div class="full" style="display:flex;gap:10px;flex-wrap:wrap">${o.confirmed_by?`<span class="badge" style="background:#dcfce7;color:#15803d">📞 أكّدها ${esc(userName(o.confirmed_by))} · ${esc(o.confirmed_at)}</span>`:''}${o.prepared_by?`<span class="badge" style="background:#e0ecff;color:#1d4ed8">🔧 حضّرها ${esc(userName(o.prepared_by))} · ${esc(o.prepared_at)}</span>`:''}</div>`:''}
       </div>
       <div class="sect">التوصيل</div>
       <div class="grid">
@@ -1064,7 +1090,16 @@ function openOrder(o,opts={}){
         <div class="seg" id="segType"><button type="button" data-t="1">توصيل</button><button type="button" data-t="2">تبديل (Échange)</button></div>
         <div class="fee full" id="feeBox">سعر التوصيل: —</div>
       </div>
-    </fieldset></form>
+    </fieldset>
+      <div class="sect">المتابعة</div>
+      <fieldset style="border:0;padding:0;margin:0" ${ed||canFollow()?'':'disabled'}><div class="grid">
+        <label class="f">الحالة<select name="status">${[...new Set([o.status,...statusList()])].map(s=>`<option ${s===o.status?'selected':''}>${esc(s)}</option>`).join('')}</select></label>
+        <label class="f">📞 مسؤول التأكيد<select name="assigned">${userOptions(isNew?me():o.assigned,'— غير مسندة —')}</select></label>
+        <label class="f">🔧 التقني (للتحضير)<select name="tech"><option value="">— بدون —</option>${techs().map(u=>`<option value="${esc(u.username)}" ${u.username===o.tech?'selected':''}>🔧 ${esc(u.name||u.username)}</option>`).join('')}${o.tech&&!techs().some(u=>u.username===o.tech)?`<option selected value="${esc(o.tech)}">${esc(o.tech)}</option>`:''}</select></label>
+        <label class="f full">ملاحظة<input name="note" value="${esc(o.note)}"></label>
+        ${o.confirmed_by||o.prepared_by?`<div class="full" style="display:flex;gap:10px;flex-wrap:wrap">${o.confirmed_by?`<span class="badge" style="background:#dcfce7;color:#15803d">📞 أكّدها ${esc(userName(o.confirmed_by))} · ${esc(o.confirmed_at)}</span>`:''}${o.prepared_by?`<span class="badge" style="background:#e0ecff;color:#1d4ed8">🔧 حضّرها ${esc(userName(o.prepared_by))} · ${esc(o.prepared_at)}</span>`:''}</div>`:''}
+      </div></fieldset>
+    </form>
     ${o.tracking?`<div class="eco-box">
       <h4>الطرد لدى شركة التوصيل <span class="trk">${esc(o.tracking)}</span> ${o.dstatus?`<span style="color:#a9abb3;font-weight:600">· ${esc(o.dstatus)}</span>`:''}</h4>
       <div class="eco-acts">
@@ -1084,7 +1119,8 @@ function openOrder(o,opts={}){
       ${!isNew && !o.tracking && sh?`<button class="btn dark" id="oSend">${ICON.send.replace('<svg','<svg class="ico"')} حفظ وإرسال إلى شركة التوصيل</button>`:''}
       ${!isNew && can('orders_prepare') && o.tech===me() && o.status!==CFG.prepared?`${o.status!==CFG.preparing?`<button class="btn" id="oPrep1">🔧 بدء التحضير</button>`:''}<button class="btn" id="oPrep2" style="background:var(--ok);border-color:var(--ok);color:#fff">✓ تم التحضير</button>`:''}
       ${!isNew && can('prospects')?`<button class="btn" id="oToP">${ICON.convert.replace('<svg','<svg class="ico"')} تحويل إلى زبون محتمل</button>`:''}
-      <span class="sp"></span><button class="btn" data-x>إغلاق</button>${ed?`<button class="btn pri" id="oSave">${isNew?'إضافة الطلبية':'حفظ في الشيت'}</button>`:''}
+      ${!isNew && can('caisse')?`<button class="btn" id="oCx">💰 تسجيل في الصندوق</button>`:''}
+      <span class="sp"></span><button class="btn" data-x>إغلاق</button>${fol?`<button class="btn pri" id="oSave">${isNew?'إضافة الطلبية':'حفظ في الشيت'}</button>`:''}
     </div>`);
   const f=$('#of',m); const F=k=>f.elements[k];
   const segSet=()=>{ $$('#segDesk button',m).forEach(b=>b.classList.toggle('on',+b.dataset.d===curDesk)); $$('#segType button',m).forEach(b=>b.classList.toggle('on',+b.dataset.t===opType)); showFee(); };
@@ -1110,6 +1146,7 @@ function openOrder(o,opts={}){
   const changed=v=>{ const c={}; Object.keys(v).forEach(k=>{ if(String(v[k])!==String(o[k]??'')) c[k]=v[k]; }); return c; };
 
   if($('#oWa',m)) $('#oWa',m).onclick=()=>orderWa(o);
+  if($('#oCx',m)) $('#oCx',m).onclick=()=>cxModal(null,'دخول',{amount:money(o.total)||'',motif:`طلبية ${o.ref||'#'+o._row} - ${o.name}`,detail:[o.product,o.qty&&o.qty!=='1'?'x'+o.qty:'',o.tracking].filter(Boolean).join(' · '),category:'مبيعات'});
   [['#oPrep1',()=>CFG.preparing,'بدأ التحضير'],['#oPrep2',()=>CFG.prepared,'✓ الطلبية جاهزة للإرسال']].forEach(([id,st,msg])=>{ const b=$(id,m); if(b) b.onclick=async()=>{ b.disabled=true; try{ await saveOrders([{o,values:{status:st()}}]); toast(msg,'ok'); m.remove(); render(); }catch(e){ toast(e.message,'bad'); b.disabled=false; } }; });
   if($('#oSave',m)) $('#oSave',m).onclick=async e=>{
     const v=read(); e.target.disabled=true;
@@ -1122,7 +1159,8 @@ function openOrder(o,opts={}){
         if(opts.onCreated) await opts.onCreated(r.row);
         if(can('orders_view')) loadOrders(); return;
       }
-      const c=changed(v); if(c.tech && !o.tech && (v.status===CFG.confirmed) && c.status===undefined) c.status=CFG.preparing;
+      const c=changed(v); if(!can('orders_edit')) Object.keys(c).forEach(k=>{ if(!['status','assigned','tech','note'].includes(k)) delete c[k]; });
+      if(c.tech && !o.tech && (v.status===CFG.confirmed) && c.status===undefined) c.status=CFG.preparing;
       if(Object.keys(c).length) await saveOrders([{o,values:c}]);
       toast('تم الحفظ في الشيت','ok'); m.remove(); render();
     }catch(err){ toast(err.message,'bad'); e.target.disabled=false; }
@@ -1189,7 +1227,10 @@ $('#q').oninput=e=>{ VIEW.q=e.target.value; VIEW.page=0; render(); };
 $('#fWilaya').innerHTML+=WILAYAS.map(w=>`<option value="${w[0]}">${w[0]} - ${w[1]}</option>`).join('');
 $('#fWilaya').onchange=e=>{ VIEW.wilaya=e.target.value; VIEW.page=0; render(); };
 $('#fTrk').onchange=e=>{ VIEW.trk=e.target.value; VIEW.page=0; render(); };
-$('#fAssigned').onchange=e=>{ VIEW.assigned=e.target.value; VIEW.page=0; render(); };
+$('#fConf').onchange=e=>{ VIEW.conf=e.target.value; VIEW.page=0; render(); };
+$('#fTech').onchange=e=>{ VIEW.tech=e.target.value; VIEW.page=0; render(); };
+$('#fPeriod').onchange=e=>{ VIEW.period=e.target.value; VIEW.page=0; $('#fCustom').classList.toggle('hidden',VIEW.period!=='custom'); render(); };
+$('#fFrom').onchange=e=>{ VIEW.from=e.target.value; render(); }; $('#fTo').onchange=e=>{ VIEW.to=e.target.value; render(); };
 $('#bTech').onchange=async e=>{ const v=e.target.value; if(!v) return; const val=v==='_none'?'':v;
   try{ await saveOrders(selected().map(o=>{ const vals={tech:val}; if(val && (o.status===CFG.confirmed||!o.tech)) vals.status=CFG.preparing; return {o,values:vals}; })); toast(val?'حُوّلت إلى التقني '+userName(val):'أُلغي التقني','ok'); SEL.clear(); render(); }catch(err){ toast(err.message,'bad'); render(); } };
 $('#bAssign').onchange=async e=>{ const v=e.target.value; if(!v) return; const val=v==='_none'?'':v;
@@ -1396,7 +1437,7 @@ function taskModal(t,prefill){
       <label class="f">الأولوية<select name="priority">${PRIORITIES.map(p=>`<option value="${p[0]}" ${p[0]===t.priority?'selected':''}>${p[1]}</option>`).join('')}</select></label>
       <label class="f">التاريخ<input type="date" name="due_date" value="${esc(t.due_date)}"></label>
       <label class="f">الوقت<input type="time" name="due_time" value="${esc(t.due_time)}"></label>
-      <label class="f">المسؤول<select name="assigned_to" ${all?'':'disabled'}>${userOptions(t.assigned_to)}</select></label>
+      <label class="f">المسؤول عن المهمة<select name="assigned_to">${userOptions(t.assigned_to)}</select></label>
       <label class="f">الحالة<select name="status">${TASK_STATUSES.map(s=>`<option ${s===t.status?'selected':''}>${s}</option>`).join('')}</select></label>
       <label class="f full">نسبة التقدم: <b id="prLbl" style="color:var(--or)">${Number(t.progress||0)}%</b><input type="range" name="progress" min="0" max="100" step="10" value="${Number(t.progress||0)}"></label>
       <label class="f full">مرتبط بـ (زبون، طلبية...)<input name="related" value="${esc(t.related)}"></label>
@@ -1410,7 +1451,7 @@ function taskModal(t,prefill){
   F('status').onchange=()=>{ const s=F('status').value; if(s==='منجزة'){ F('progress').value=100; } else if(+F('progress').value>=100){ F('progress').value=90; } $('#prLbl',m).textContent=F('progress').value+'%'; };
   $('#tkSave',m).onclick=async e=>{
     const r={id:t.id}; ['title','type','priority','due_date','due_time','status','progress','related','description'].forEach(k=>r[k]=F(k).value.trim());
-    if(all) r.assigned_to=F('assigned_to').value; else if(isNew) r.assigned_to=ME.user.username;
+    r.assigned_to=F('assigned_to').value||ME.user.username;
     if(!r.title) return toast('أدخل عنوان المهمة','bad');
     e.target.disabled=true; try{ await saveTask(r); toast('حُفظت المهمة','ok'); m.remove(); }catch(err){ toast(err.message,'bad'); e.target.disabled=false; }
   };
@@ -1509,8 +1550,8 @@ function renderCaisse(){
   const byU={}; view.forEach(x=>{ const k=x.user||'—'; const o=byU[k]=byU[k]||{i:0,o:0}; x.type==='خروج'?o.o+=amt(x):o.i+=amt(x); });
   $('#cxUsersSum').innerHTML=Object.entries(byU).sort((a,b)=>(b[1].i+b[1].o)-(a[1].i+a[1].o)).map(([k,o])=>`<tr><td><b>${esc(k)}</b></td><td class="okc">+${nf(o.i)}</td><td class="badc">−${nf(o.o)}</td></tr>`).join('')||'<tr><td colspan="3" class="empty">—</td></tr>';
 }
-function cxModal(x,type){
-  const isNew=!x; x=x||{type:type||'دخول',date:TODAY(),user:ME.user.name||ME.user.username,groupe:CV.groupe||list(CFG.caisses)[0]||'الصندوق الرئيسي'};
+function cxModal(x,type,prefill){
+  const isNew=!x; x=x||Object.assign({type:type||'دخول',date:TODAY(),user:ME.user.name||ME.user.username,groupe:CV.groupe||list(CFG.caisses)[0]||'الصندوق الرئيسي'},prefill||{});
   let tp=x.type;
   const motifs=[...new Set(CX.map(c=>c.motif))].slice(-200);
   const cats=[...new Set([...list(CFG.caisseCategories),...CX.map(c=>c.category).filter(Boolean)])];
