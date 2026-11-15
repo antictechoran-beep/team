@@ -183,7 +183,7 @@ pre.code{display:block;padding:12px;overflow:auto;max-height:240px;font-size:12p
 #v-orders td:nth-child(3),#v-orders td:nth-child(6){white-space:normal;min-width:120px}
 #v-orders .toolbar select{max-width:200px}
 /* caisse */
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
 .kpi{background:#fff;border:1px solid var(--ln);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
 .kpi span{color:var(--mu);font-size:12px;font-weight:700}
 .kpi b{font-size:24px;font-weight:800;direction:ltr;text-align:right}
@@ -882,7 +882,7 @@ function colName(k){ const f=FIELDS.find(x=>x.k===k); return (CFG.map||{})[k] ||
 function toOrder(r){
   const o={_row:r._row};
   FIELDS.forEach(f=>{ const i=colIdx(f.k); o[f.k]= i>=0 ? String(r.cells[i]??'').trim() : ''; });
-  if(!o.status) o.status = statusList()[0]||'جديدة';
+  if(!o.status || /^processing$/i.test(o.status)) o.status = statusList()[0]||'جديدة'; // فارغة أو processing = جديدة
   o._w = wilayaCode(o.wilaya);
   return o;
 }
@@ -1119,8 +1119,7 @@ function openOrder(o,opts={}){
       ${!isNew && !o.tracking && sh?`<button class="btn dark" id="oSend">${ICON.send.replace('<svg','<svg class="ico"')} حفظ وإرسال إلى شركة التوصيل</button>`:''}
       ${!isNew && can('orders_prepare') && o.tech===me() && o.status!==CFG.prepared?`${o.status!==CFG.preparing?`<button class="btn" id="oPrep1">🔧 بدء التحضير</button>`:''}<button class="btn" id="oPrep2" style="background:var(--ok);border-color:var(--ok);color:#fff">✓ تم التحضير</button>`:''}
       ${!isNew && can('prospects')?`<button class="btn" id="oToP">${ICON.convert.replace('<svg','<svg class="ico"')} تحويل إلى زبون محتمل</button>`:''}
-      ${!isNew && can('caisse')?`<button class="btn" id="oCx">💰 تسجيل في الصندوق</button>`:''}
-      <span class="sp"></span><button class="btn" data-x>إغلاق</button>${fol?`<button class="btn pri" id="oSave">${isNew?'إضافة الطلبية':'حفظ في الشيت'}</button>`:''}
+            <span class="sp"></span><button class="btn" data-x>إغلاق</button>${fol?`<button class="btn pri" id="oSave">${isNew?'إضافة الطلبية':'حفظ في الشيت'}</button>`:''}
     </div>`);
   const f=$('#of',m); const F=k=>f.elements[k];
   const segSet=()=>{ $$('#segDesk button',m).forEach(b=>b.classList.toggle('on',+b.dataset.d===curDesk)); $$('#segType button',m).forEach(b=>b.classList.toggle('on',+b.dataset.t===opType)); showFee(); };
@@ -1146,7 +1145,6 @@ function openOrder(o,opts={}){
   const changed=v=>{ const c={}; Object.keys(v).forEach(k=>{ if(String(v[k])!==String(o[k]??'')) c[k]=v[k]; }); return c; };
 
   if($('#oWa',m)) $('#oWa',m).onclick=()=>orderWa(o);
-  if($('#oCx',m)) $('#oCx',m).onclick=()=>cxModal(null,'دخول',{amount:money(o.total)||'',motif:`طلبية ${o.ref||'#'+o._row} - ${o.name}`,detail:[o.product,o.qty&&o.qty!=='1'?'x'+o.qty:'',o.tracking].filter(Boolean).join(' · '),category:'مبيعات'});
   [['#oPrep1',()=>CFG.preparing,'بدأ التحضير'],['#oPrep2',()=>CFG.prepared,'✓ الطلبية جاهزة للإرسال']].forEach(([id,st,msg])=>{ const b=$(id,m); if(b) b.onclick=async()=>{ b.disabled=true; try{ await saveOrders([{o,values:{status:st()}}]); toast(msg,'ok'); m.remove(); render(); }catch(e){ toast(e.message,'bad'); b.disabled=false; } }; });
   if($('#oSave',m)) $('#oSave',m).onclick=async e=>{
     const v=read(); e.target.disabled=true;
@@ -1525,8 +1523,7 @@ function renderCaisse(){
   $('#cxKpis').innerHTML=`
     <div class="kpi dark"><span>الرصيد الحالي${CV.groupe?' — '+esc(CV.groupe):''}</span><b>${nf(bal)} <small>دج</small></b><i>${base.length} عملية</i></div>
     <div class="kpi"><span>المداخيل (الفترة)</span><b class="okc">+${nf(inn)}</b><i>${view.filter(x=>x.type!=='خروج').length} عملية</i></div>
-    <div class="kpi"><span>المصاريف (الفترة)</span><b class="badc">−${nf(out)}</b><i>${view.filter(x=>x.type==='خروج').length} عملية</i></div>
-    <div class="kpi"><span>صافي الفترة</span><b style="color:${inn-out>=0?'var(--ok)':'var(--bad)'}">${inn-out>=0?'+':'−'}${nf(Math.abs(inn-out))}</b><i>${from==='0000'?'كل الفترات':esc(from)+' ← '+esc(to)}</i></div>`;
+    <div class="kpi"><span>المصاريف (الفترة)</span><b class="badc">−${nf(out)}</b><i>${view.filter(x=>x.type==='خروج').length} عملية</i></div>`;
   const rows=[...view].reverse(); const P=50; const pages=Math.max(1,Math.ceil(rows.length/P)); CV.page=Math.min(CV.page,pages-1);
   const adm=can('caisse_admin');
   $('#cxEmpty').classList.toggle('hidden',rows.length>0);
