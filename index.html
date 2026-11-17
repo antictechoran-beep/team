@@ -186,6 +186,17 @@ pre.code{display:block;padding:12px;overflow:auto;max-height:240px;font-size:12p
 .fs-btn:hover{border-color:var(--or);color:var(--or)}
 .fs-btn svg{width:17px;height:17px}
 @media (max-width:820px){ .fs-btn{margin:0 4px} }
+.mob-only{display:none!important}
+.mh-acts{display:inline-flex;gap:6px}
+@media (max-width:820px){
+  .ibtn.mob-only{display:inline-grid!important}
+  .btn.mob-only{display:inline-flex!important}
+  .ibtn.mob-only[data-a=call]{color:var(--info)}
+  .mh{flex-wrap:wrap}
+  .mh h3{flex:1 1 calc(100% - 40px);order:0}
+  .mh .close{order:1}
+  .mh .mh-acts,.mh > .btn,.mh > a.btn{order:2}
+}
 /* caisse */
 .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
 .kpi{background:#fff;border:1px solid var(--ln);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
@@ -318,6 +329,7 @@ pre.code{display:block;padding:12px;overflow:auto;max-height:240px;font-size:12p
           <button class="btn sm" id="bShip" data-perm="orders_ship">تأكيد الشحن</button>
           <button class="btn sm" id="bLabel" data-perm="orders_ship">البوردرو</button>
           <span style="flex:1"></span>
+          <button class="btn sm" id="bDel" data-admin style="color:#ff8a8a;background:var(--bk2);border-color:var(--bk3)">حذف</button>
           <button class="btn sm" id="bClear">إلغاء التحديد</button>
         </div>
         <div class="card">
@@ -346,6 +358,7 @@ pre.code{display:block;padding:12px;overflow:auto;max-height:240px;font-size:12p
         <div class="toolbar">
           <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="pq" placeholder="بحث بالاسم، الهاتف، المنتج، المصدر..."></div>
           <select id="pAssigned"><option value="">كل المسؤولين</option></select>
+          <select id="pSource"></select>
           <select id="pFollow"><option value="">كل المواعيد</option><option value="due">متابعة اليوم أو متأخرة</option><option value="never">لم يتم التواصل بعد</option></select>
         </div>
         <div class="card">
@@ -599,6 +612,8 @@ const ICON = {
   track:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.3 7-12a7 7 0 0 0-14 0c0 5.7 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>',
   print:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>',
   wa:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.2c0-.2-.2-.2-.5-.4z"/></svg>',
+  call:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>',
+  sms:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg>',
   convert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>',
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>',
 };
@@ -622,7 +637,7 @@ if(!IN_GAS && SCRIPT_URL) LS.url = SCRIPT_URL;
 let ME = null, CFG = {}, USERS = [], TEMPLATES = [], PROSPECTS = [], TASKS = [];
 let DATA = {headers:[],rows:[]}, ORDERS = [], ORDERS_LOADED = false;
 let VIEW = {status:'',q:'',wilaya:'',trk:'',conf:'',tech:'',period:'',from:'',to:'',page:0}; let SEL = new Set();
-let PV = {status:'',q:'',assigned:'',follow:''};
+let PV = {status:'',q:'',assigned:'',follow:'',source:''};
 let TV = {mode:'table',status:'',q:'',type:'',assigned:'',month:null,day:null};
 let FEES = null; const COMMUNES = {};
 let CURRENT = '';
@@ -764,6 +779,7 @@ async function start(){
   $('#nav').innerHTML = NAV.filter(n=>can(n.perm)).map(n=>`<a data-v="${n.v}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${n.icon}</svg><span>${n.label}</span><i class="cnt" id="cnt-${n.v}" style="font-style:normal"></i></a>`).join('');
   $$('#nav a').forEach(a=>a.onclick=()=>{ location.hash=a.dataset.v; });
   $$('[data-perm]').forEach(el=>el.classList.toggle('hidden',!el.dataset.perm.split('|').some(can)));
+  $$('[data-admin]').forEach(el=>el.classList.toggle('hidden',!ME.user.isAdmin));
   try{ USERS = await api('users.names'); }catch(e){ USERS=[]; }
   try{ TEMPLATES = await api('table.list',{table:'templates'}); }catch(e){ TEMPLATES=[]; }
   ORDERS_LOADED=false; PROSPECTS=[]; TASKS=[]; CX=[]; CX_LOADED=false;
@@ -822,29 +838,43 @@ function fillVars(text,v){
   return String(text||'').replace(/\{([^{}]+)\}/g,(m,k)=>map[k]!=null&&map[k]!==''?map[k]:(k in map?'':m));
 }
 function waLink(phone,text){ const d=digits(phone).replace(/^0/,''); return `https://wa.me/213${d}?text=${encodeURIComponent(text||'')}`; }
-/** target = {type:'prospect'|'order', ref, name, phone, vars:{...}} */
-function waModal(target, onSent){
+/** تسجيل تواصل (مكالمة، رسالة...) */
+function logContact(target, template, message){
+  return api('contact.log',{type:target.type,ref:String(target.ref||''),name:target.name,phone:digits(target.phone),template,message:message||''})
+    .then(r=>{ if(r.prospect){ const i=PROSPECTS.findIndex(x=>x.id===r.prospect.id); if(i>=0) PROSPECTS[i]=r.prospect; if(CURRENT==='prospects') renderProspects(); } return r; })
+    .catch(e=>toast('لم يُسجّل التواصل: '+e.message,'bad'));
+}
+/** أزرار الاتصال والرسالة (تظهر في الهاتف) */
+function phoneBtns(phone, big){
+  const ph=digits(phone); if(!/^0\d{8,9}$/.test(ph)) return '';
+  return big
+    ? `<a class="btn sm mob-only" data-a="call" href="tel:${ph}" target="_blank">${ICON.call.replace('<svg','<svg class="ico"')} اتصال</a><button type="button" class="btn sm mob-only" data-a="sms">${ICON.sms.replace('<svg','<svg class="ico"')} رسالة</button>`
+    : `<a class="ibtn mob-only" data-a="call" href="tel:${ph}" target="_blank" title="اتصال">${ICON.call}</a><button class="ibtn mob-only" data-a="sms" title="رسالة SMS">${ICON.sms}</button>`;
+}
+/** target = {type:'prospect'|'order', ref, name, phone, vars:{...}} ، channel = 'wa' أو 'sms' */
+function waModal(target, onSent, channel){
+  const sms = channel==='sms';
   const ph=digits(target.phone);
   if(!/^0\d{8,9}$/.test(ph)) return toast('رقم الهاتف غير صحيح','bad');
   const prefer = target.type==='prospect' ? 'زبائن محتملون' : 'طلبيات';
   const sorted=[...TEMPLATES].sort((a,b)=>(b.category===prefer)-(a.category===prefer));
-  const m=modal(`<div class="mh"><h3>رسالة واتساب إلى ${esc(target.name||'')} <span class="ph sub" style="font-weight:600">${esc(ph)}</span></h3><button class="close" data-x>×</button></div>
+  const m=modal(`<div class="mh"><h3>${sms?'رسالة SMS':'رسالة واتساب'} إلى ${esc(target.name||'')} <span class="ph sub" style="font-weight:600">${esc(ph)}</span></h3><button class="close" data-x>×</button></div>
     <div class="mb">
       <label class="f">القالب<select id="waTpl"><option value="">— رسالة بدون قالب —</option>${sorted.map(t=>`<option value="${esc(t.id)}">${esc(t.title)}${t.category?' · '+esc(t.category):''}</option>`).join('')}</select></label>
       <div style="height:10px"></div>
       <label class="f">نص الرسالة (يمكنك تعديله قبل الإرسال)<textarea id="waText" rows="7"></textarea></label>
       <div class="hint">عند الضغط على "فتح واتساب" يُسجّل تاريخ التواصل تلقائياً.</div>
     </div>
-    <div class="mf"><button class="btn" id="waCopy">نسخ النص</button><span class="sp"></span><button class="btn" data-x>إلغاء</button><a class="btn wa" id="waGo" target="_blank" rel="noopener">${ICON.wa.replace('<svg','<svg class="ico"')} فتح واتساب</a></div>`,'md');
+    <div class="mf"><button class="btn" id="waCopy">نسخ النص</button><span class="sp"></span><button class="btn" data-x>إلغاء</button><a class="btn ${sms?'dark':'wa'}" id="waGo" target="_blank" rel="noopener">${(sms?ICON.sms:ICON.wa).replace('<svg','<svg class="ico"')} ${sms?'فتح الرسائل':'فتح واتساب'}</a></div>`,'md');
   const sel=$('#waTpl',m), ta=$('#waText',m), go=$('#waGo',m);
-  const upd=()=>{ go.href=waLink(ph,ta.value); };
+  const upd=()=>{ go.href= sms ? `sms:${ph}?&body=${encodeURIComponent(ta.value)}` : waLink(ph,ta.value); };
   sel.onchange=()=>{ const t=TEMPLATES.find(x=>x.id===sel.value); ta.value=t?fillVars(t.body,target.vars||{}):''; upd(); };
   ta.oninput=upd;
   if(sorted.length && sorted[0].category===prefer){ sel.value=sorted[0].id; sel.onchange(); } else upd();
   $('#waCopy',m).onclick=async()=>{ try{ await navigator.clipboard.writeText(ta.value); toast('نُسخ النص','ok'); }catch(e){ ta.select(); } };
   go.onclick=()=>{
     const t=TEMPLATES.find(x=>x.id===sel.value);
-    api('contact.log',{type:target.type,ref:String(target.ref||''),name:target.name,phone:ph,template:t?t.title:'',message:ta.value})
+    api('contact.log',{type:target.type,ref:String(target.ref||''),name:target.name,phone:ph,template:(sms?'SMS: ':'')+(t?t.title:''),message:ta.value})
       .then(r=>{ toast('سُجّل التواصل','ok'); if(r.prospect){ const i=PROSPECTS.findIndex(x=>x.id===r.prospect.id); if(i>=0) PROSPECTS[i]=r.prospect; if(CURRENT==='prospects') renderProspects(); } onSent&&onSent(r); })
       .catch(e=>toast('لم يُسجّل التواصل: '+e.message,'bad'));
     setTimeout(()=>m.remove(),300);
@@ -971,7 +1001,7 @@ function render(){
       <td style="font-size:12px;line-height:1.7">${o.assigned||o.confirmed_by?`<div title="المسؤول / أكّدها">📞 ${esc(userName(o.confirmed_by||o.assigned))}${o.confirmed_by?' <span class="okc">✓</span>':''}</div>`:'<span class="sub">غير مسندة</span>'}${o.tech||o.prepared_by?`<div title="التقني / حضّرها">🔧 ${esc(userName(o.prepared_by||o.tech))}${o.prepared_by?' <span class="okc">✓</span>':''}</div>`:''}</td>
       <td>${o.tracking?`<span class="trk">${esc(o.tracking)}</span>${o.dstatus?`<div class="sub">${esc(o.dstatus)}</div>`:''}`:'<span class="sub">—</span>'}</td>
       <td><div class="acts">
-        <button class="ibtn wa" data-a="wa" title="رسالة واتساب">${ICON.wa}</button>
+        <button class="ibtn wa" data-a="wa" title="رسالة واتساب">${ICON.wa}</button>${phoneBtns(o.phone)}
         <button class="ibtn" data-a="edit" title="فتح">${ICON.edit}</button>
         ${o.tracking?`<button class="ibtn" data-a="track" title="تتبع">${ICON.track}</button>${sh?`<button class="ibtn" data-a="label" title="البوردرو">${ICON.print}</button>`:''}`:(sh?`<button class="ibtn" data-a="send" title="إرسال إلى شركة التوصيل">${ICON.send}</button>`:'')}
       </div></td></tr>`;
@@ -997,7 +1027,8 @@ async function saveOrders(changes){
   if(newMap && can('settings')) api('settings.save',{settings:{map:CFG.map}}).catch(()=>{});
 }
 function orderVars(o){ return {name:o.name,phone:o.phone,product:o.product,wilaya:o._w?wName(o._w):o.wilaya,commune:o.commune,total:o.total,tracking:o.tracking}; }
-function orderWa(o){ waModal({type:'order',ref:o.ref||o._row,name:o.name,phone:o.phone,vars:orderVars(o)}); }
+const orderTarget = o => ({type:'order',ref:o.ref||o._row,name:o.name,phone:o.phone,vars:orderVars(o)});
+function orderWa(o,ch){ waModal(orderTarget(o),null,ch); }
 
 function payload(o){
   const desk = isDesk(o.delivery);
@@ -1076,7 +1107,7 @@ function openOrder(o,opts={}){
   const ed = isNew || can('orders_edit'), sh=can('orders_ship'), fol = ed || canFollow();
   const desk = isDesk(o.delivery); let curDesk = desk===null? +CFG.desk : desk; let opType=1;
   const m=modal(`
-    <div class="mh"><h3>${isNew?(opts.title||'طلبية جديدة'):'الطلبية '+esc(o.ref||'#'+o._row)}</h3>${!isNew?`<button class="btn sm wa" id="oWa">${ICON.wa.replace('<svg','<svg class="ico"')} واتساب</button>`:''}<button class="close" data-x>×</button></div>
+    <div class="mh"><h3>${isNew?(opts.title||'طلبية جديدة'):'الطلبية '+esc(o.ref||'#'+o._row)}</h3>${!isNew?`<span class="mh-acts" id="oPh">${phoneBtns(o.phone,true)}</span><button class="btn sm wa" id="oWa">${ICON.wa.replace('<svg','<svg class="ico"')} واتساب</button>`:''}<button class="close" data-x>×</button></div>
     <div class="mb"><form id="of" onsubmit="return false"><fieldset style="border:0;padding:0;margin:0" ${ed?'':'disabled'}>
       <div class="sect">الزبون</div>
       <div class="grid">
@@ -1128,7 +1159,8 @@ function openOrder(o,opts={}){
       ${!isNew && !o.tracking && sh?`<button class="btn dark" id="oSend">${ICON.send.replace('<svg','<svg class="ico"')} حفظ وإرسال إلى شركة التوصيل</button>`:''}
       ${!isNew && can('orders_prepare') && o.tech===me() && o.status!==CFG.prepared?`${o.status!==CFG.preparing?`<button class="btn" id="oPrep1">🔧 بدء التحضير</button>`:''}<button class="btn" id="oPrep2" style="background:var(--ok);border-color:var(--ok);color:#fff">✓ تم التحضير</button>`:''}
       ${!isNew && can('prospects')?`<button class="btn" id="oToP">${ICON.convert.replace('<svg','<svg class="ico"')} تحويل إلى زبون محتمل</button>`:''}
-            <span class="sp"></span><button class="btn" data-x>إغلاق</button>${fol?`<button class="btn pri" id="oSave">${isNew?'إضافة الطلبية':'حفظ في الشيت'}</button>`:''}
+            ${!isNew && ME.user.isAdmin?`<button class="btn red" id="oDel">${ICON.trash.replace('<svg','<svg class="ico"')} حذف</button>`:''}
+      <span class="sp"></span><button class="btn" data-x>إغلاق</button>${fol?`<button class="btn pri" id="oSave">${isNew?'إضافة الطلبية':'حفظ في الشيت'}</button>`:''}
     </div>`);
   const f=$('#of',m); const F=k=>f.elements[k];
   const segSet=()=>{ $$('#segDesk button',m).forEach(b=>b.classList.toggle('on',+b.dataset.d===curDesk)); $$('#segType button',m).forEach(b=>b.classList.toggle('on',+b.dataset.t===opType)); showFee(); };
@@ -1154,6 +1186,8 @@ function openOrder(o,opts={}){
   const changed=v=>{ const c={}; Object.keys(v).forEach(k=>{ if(String(v[k])!==String(o[k]??'')) c[k]=v[k]; }); return c; };
 
   if($('#oWa',m)) $('#oWa',m).onclick=()=>orderWa(o);
+  if($('#oPh',m)) $('#oPh',m).onclick=e=>{ const b=e.target.closest('[data-a]'); if(!b) return; if(b.dataset.a==='sms') orderWa(o,'sms'); else logContact(orderTarget(o),'مكالمة'); };
+  if($('#oDel',m)) $('#oDel',m).onclick=async()=>{ if(await deleteOrders([o])) m.remove(); };
   [['#oPrep1',()=>CFG.preparing,'بدأ التحضير'],['#oPrep2',()=>CFG.prepared,'✓ الطلبية جاهزة للإرسال']].forEach(([id,st,msg])=>{ const b=$(id,m); if(b) b.onclick=async()=>{ b.disabled=true; try{ await saveOrders([{o,values:{status:st()}}]); toast(msg,'ok'); m.remove(); render(); }catch(e){ toast(e.message,'bad'); b.disabled=false; } }; });
   if($('#oSave',m)) $('#oSave',m).onclick=async e=>{
     const v=read(); e.target.disabled=true;
@@ -1255,11 +1289,22 @@ $('#tbody').addEventListener('click',e=>{
   const a=b.dataset.a;
   if(a==='edit') openOrder(o);
   if(a==='wa') orderWa(o);
+  if(a==='sms') orderWa(o,'sms');
+  if(a==='call') logContact(orderTarget(o),'مكالمة');
   if(a==='send') bulkSend([o]).catch(err=>toast(err.message,'bad'));
   if(a==='label') showLabel([o.tracking]);
   if(a==='track'){ const m=openOrder(o); const t=$('[data-e="track"]',m); t&&t.click(); }
 });
 const selected=()=>ORDERS.filter(o=>SEL.has(o._row));
+async function deleteOrders(arr){
+  if(!arr.length) return false;
+  const label = arr.length===1 ? `الطلبية "${arr[0].name}"` : `${arr.length} طلبيات`;
+  if(!await ask(`حذف ${label} نهائياً من الشيت؟ لا يمكن التراجع.`,'حذف')) return false;
+  const chk=o=>{ const c={}; ['name','phone'].forEach(k=>{ if((CFG.map||{})[k]) c[CFG.map[k]]=o[k]; }); return c; };
+  try{ const r=await api('orders.delete',{rows:arr.map(o=>({row:o._row,check:chk(o)}))}); toast(`حُذفت ${r.deleted} طلبية`,'ok'); SEL.clear(); await loadOrders(); return true; }
+  catch(e){ toast(e.message,'bad'); if(/حدّث/.test(e.message)) loadOrders(); return false; }
+}
+$('#bDel').onclick=()=>deleteOrders(selected());
 $('#bClear').onclick=()=>{ SEL.clear(); render(); };
 $('#bSend').onclick=()=>{ const l=selected(); const oc=CFG.onlyConf==='1'; ask(`إرسال ${l.filter(o=>!o.tracking&&(!oc||o.status===CFG.confirmed)).length} طلبية إلى شركة التوصيل؟`,'إرسال').then(y=>y&&bulkSend(l)); };
 $('#bStatus').onchange=async e=>{ const v=e.target.value; if(!v) return; try{ await saveOrders(selected().map(o=>({o,values:{status:v}}))); toast('تم تغيير الحالة','ok'); SEL.clear(); render(); }catch(err){ toast(err.message,'bad'); } };
@@ -1279,12 +1324,14 @@ async function loadProspects(silent){
 function pFiltered(){
   const q=norm(PV.q), today=TODAY();
   return PROSPECTS.filter(p=>
-    (!PV.status || p.status===PV.status) && (!PV.assigned || p.assigned_to===PV.assigned) &&
+    (!PV.status || p.status===PV.status) && (!PV.assigned || p.assigned_to===PV.assigned) && (!PV.source || (PV.source==='_none'? !p.source : p.source===PV.source)) &&
     (!PV.follow || (PV.follow==='due' ? (p.next_followup && p.next_followup<=today && p.status!==CFG.converted) : !p.last_contact)) &&
-    (!q || norm([p.name,p.phone,p.product,p.source,p.notes,p.commune].join(' ')).includes(q))
+    (!q || norm([p.name,p.phone,p.email,p.product,p.source,p.notes,p.commune].join(' ')).includes(q))
   ).sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
 }
 function renderProspects(){
+  const srcs={}; PROSPECTS.forEach(p=>{ if(p.source) srcs[p.source]=(srcs[p.source]||0)+1; });
+  $('#pSource').innerHTML='<option value="">🔗 كل المصادر</option>'+Object.keys(srcs).sort().map(x=>`<option value="${esc(x)}" ${x===PV.source?'selected':''}>${esc(x)} (${srcs[x]})</option>`).join('')+(PROSPECTS.some(p=>!p.source)?`<option value="_none" ${PV.source==='_none'?'selected':''}>بدون مصدر</option>`:'');
   const counts={}; PROSPECTS.forEach(p=>counts[p.status]=(counts[p.status]||0)+1);
   const sts=[...new Set([...pStatusList(),...Object.keys(counts)])];
   $('#pChips').innerHTML=`<button class="chip ${!PV.status?'on':''}" data-s="">الكل <i>${PROSPECTS.length}</i></button>`+sts.map(s=>`<button class="chip ${PV.status===s?'on':''}" data-s="${esc(s)}"><span class="cdot" style="${pStatusStyle(s)}"></span>${esc(s)} <i>${counts[s]||0}</i></button>`).join('');
@@ -1294,7 +1341,7 @@ function renderProspects(){
     const w=wilayaCode(p.wilaya); const due=p.next_followup && p.next_followup<=today && p.status!==CFG.converted;
     return `<tr data-id="${esc(p.id)}">
       <td><b>${esc(p.name)}</b>${p.notes?`<div class="sub">${esc(p.notes.slice(0,50))}</div>`:''}</td>
-      <td><span class="ph">${esc(p.phone)}</span></td>
+      <td><span class="ph">${esc(p.phone)}</span>${p.email?`<div class="sub" dir="ltr" style="text-align:right">${esc(p.email)}</div>`:''}</td>
       <td>${w?esc(wName(w)):esc(p.wilaya||'—')}${p.commune?`<div class="sub">${esc(p.commune)}</div>`:''}</td>
       <td>${esc(p.product)}</td>
       <td><span class="sub">${esc(p.source)}</span></td>
@@ -1302,13 +1349,14 @@ function renderProspects(){
       <td>${p.last_contact?`${esc(ago(p.last_contact))}<div class="sub">${esc(p.contact_count||0)} مرة</div>`:'<span class="sub">لم يتم بعد</span>'}</td>
       <td>${p.next_followup?`<span class="${due?'late':''}">${esc(p.next_followup)}</span>`:'<span class="sub">—</span>'}</td>
       <td>${esc(userName(p.assigned_to))}</td>
-      <td><div class="acts"><button class="ibtn wa" data-a="wa" title="واتساب">${ICON.wa}</button><button class="ibtn" data-a="edit" title="فتح">${ICON.edit}</button>${p.order_ref&&p.status===CFG.converted?'':`<button class="ibtn" data-a="conv" title="تحويل إلى طلبية">${ICON.convert}</button>`}</div></td>
+      <td><div class="acts"><button class="ibtn wa" data-a="wa" title="واتساب">${ICON.wa}</button>${phoneBtns(p.phone)}<button class="ibtn" data-a="edit" title="فتح">${ICON.edit}</button>${p.order_ref&&p.status===CFG.converted?'':`<button class="ibtn" data-a="conv" title="تحويل إلى طلبية">${ICON.convert}</button>`}</div></td>
     </tr>`;
   }).join('');
   const c=$('#cnt-prospects'); if(c){ const n=PROSPECTS.filter(p=>p.next_followup && p.next_followup<=today && p.status!==CFG.converted).length; c.textContent=n||''; }
 }
 function prospectVars(p){ const w=wilayaCode(p.wilaya); return {name:p.name,phone:p.phone,product:p.product,wilaya:w?wName(w):p.wilaya,commune:p.commune}; }
-function prospectWa(p){ waModal({type:'prospect',ref:p.id,name:p.name,phone:p.phone,vars:prospectVars(p)}); }
+const prospectTarget = p => ({type:'prospect',ref:p.id,name:p.name,phone:p.phone,vars:prospectVars(p)});
+function prospectWa(p,ch){ waModal(prospectTarget(p),null,ch); }
 async function saveProspect(row){
   const r=await api('table.save',{table:'prospects',row});
   const i=PROSPECTS.findIndex(x=>x.id===r.id); if(i>=0) PROSPECTS[i]=r; else PROSPECTS.push(r);
@@ -1323,12 +1371,13 @@ function convertProspect(p){
 function prospectModal(p){
   const isNew=!p; p=p||{status:pStatusList()[0]||'',assigned_to:ME.user.username,source:''};
   const w=wilayaCode(p.wilaya);
-  const m=modal(`<div class="mh"><h3>${isNew?'زبون محتمل جديد':esc(p.name)}</h3>${!isNew?`<button class="btn sm wa" id="pWa">${ICON.wa.replace('<svg','<svg class="ico"')} واتساب</button>`:''}<button class="close" data-x>×</button></div>
+  const m=modal(`<div class="mh"><h3>${isNew?'زبون محتمل جديد':esc(p.name)}</h3>${!isNew?`<span class="mh-acts" id="pPh">${phoneBtns(p.phone,true)}</span><button class="btn sm wa" id="pWa">${ICON.wa.replace('<svg','<svg class="ico"')} واتساب</button>`:''}<button class="close" data-x>×</button></div>
     <div class="mb"><form id="pf" onsubmit="return false"><div class="grid">
       <label class="f"><span class="req">الاسم</span><input name="name" value="${esc(p.name)}"></label>
       <label class="f"><span class="req">الهاتف</span><input name="phone" dir="ltr" value="${esc(p.phone)}"></label>
       <label class="f">الولاية<select name="wilaya">${wilayaOptions(w)}</select></label>
       <label class="f">البلدية<input name="commune" value="${esc(p.commune)}"></label>
+      <label class="f">البريد الإلكتروني<input name="email" type="email" dir="ltr" value="${esc(p.email)}"></label>
       <label class="f">المنتج المطلوب<input name="product" value="${esc(p.product)}"></label>
       <label class="f">المصدر<input name="source" list="srcList" value="${esc(p.source)}"><datalist id="srcList"><option>فيسبوك</option><option>إنستغرام</option><option>تيك توك</option><option>واتساب</option><option>مكالمة</option><option>المتجر</option></datalist></label>
       <label class="f">الحالة<select name="status">${[...new Set([p.status,...pStatusList()])].filter(Boolean).map(s=>`<option ${s===p.status?'selected':''}>${esc(s)}</option>`).join('')}</select></label>
@@ -1344,7 +1393,7 @@ function prospectModal(p){
       ${!isNew&&can('tasks')?`<button class="btn" id="pTask">+ مهمة متابعة</button>`:''}
       <span class="sp"></span><button class="btn" data-x>إغلاق</button><button class="btn pri" id="pSave">حفظ</button></div>`);
   const f=$('#pf',m); const F=k=>f.elements[k];
-  const read=()=>{ const r={id:p.id}; ['name','phone','commune','product','source','status','assigned_to','next_followup','notes'].forEach(k=>r[k]=F(k).value.trim()); const wc=+F('wilaya').value; r.wilaya= wc===w ? (p.wilaya||'') : (wc?`${wc} - ${wName(wc)}`:''); return r; };
+  const read=()=>{ const r={id:p.id}; ['name','phone','email','commune','product','source','status','assigned_to','next_followup','notes'].forEach(k=>r[k]=F(k).value.trim()); const wc=+F('wilaya').value; r.wilaya= wc===w ? (p.wilaya||'') : (wc?`${wc} - ${wName(wc)}`:''); return r; };
   if(!isNew) api('table.list',{table:'contacts',ref:p.id,type:'prospect'}).then(h=>{
     $('#pHist',m).innerHTML = h.length? `<ul class="tl light">${h.reverse().map(c=>`<li><b>${esc(c.template||'رسالة')}</b> — ${esc(userName(c.user))}<small>${esc(c.date)} · ${esc(String(c.message).slice(0,120))}</small></li>`).join('')}</ul>` : 'لا يوجد تواصل مسجل بعد';
   }).catch(e=>{ $('#pHist',m).textContent=e.message; });
@@ -1353,6 +1402,7 @@ function prospectModal(p){
     e.target.disabled=true; try{ await saveProspect(r); toast('تم الحفظ','ok'); m.remove(); }catch(err){ toast(err.message,'bad'); e.target.disabled=false; }
   };
   if($('#pWa',m)) $('#pWa',m).onclick=async()=>{ const r=read(); prospectWa(Object.assign({},p,r)); };
+  if($('#pPh',m)) $('#pPh',m).onclick=e=>{ const b=e.target.closest('[data-a]'); if(!b) return; const x=Object.assign({},p,read()); if(b.dataset.a==='sms') prospectWa(x,'sms'); else logContact(prospectTarget(x),'مكالمة'); };
   if($('#pConv',m)) $('#pConv',m).onclick=()=>{ m.remove(); convertProspect(Object.assign({},p,read())); };
   if($('#pTask',m)) $('#pTask',m).onclick=()=>{ taskModal(null,{title:'متابعة: '+p.name,type:'متابعة',due_date:F('next_followup').value||TODAY(),related:'زبون محتمل: '+p.name+' ('+p.phone+')',assigned_to:F('assigned_to').value||ME.user.username}); };
   if($('#pDel',m)) $('#pDel',m).onclick=async()=>{ if(!await ask('حذف "'+p.name+'" من الزبائن المحتملين؟','حذف')) return; try{ await api('table.delete',{table:'prospects',id:p.id}); PROSPECTS=PROSPECTS.filter(x=>x.id!==p.id); renderProspects(); m.remove(); }catch(err){ toast(err.message,'bad'); } };
@@ -1362,6 +1412,7 @@ $('#pChips').onclick=e=>{ const c=e.target.closest('.chip'); if(!c) return; PV.s
 $('#pq').oninput=e=>{ PV.q=e.target.value; renderProspects(); };
 $('#pAssigned').onchange=e=>{ PV.assigned=e.target.value; renderProspects(); };
 $('#pFollow').onchange=e=>{ PV.follow=e.target.value; renderProspects(); };
+$('#pSource').onchange=e=>{ PV.source=e.target.value; renderProspects(); };
 $('#pBody').addEventListener('change',async e=>{
   if(!e.target.classList.contains('ps')) return; const p=PROSPECTS.find(x=>x.id===e.target.closest('tr').dataset.id);
   try{ await saveProspect({id:p.id,status:e.target.value}); toast('تم تغيير الحالة','ok'); }catch(err){ toast(err.message,'bad'); renderProspects(); }
@@ -1369,7 +1420,7 @@ $('#pBody').addEventListener('change',async e=>{
 $('#pBody').addEventListener('click',e=>{
   const tr=e.target.closest('tr'); if(!tr||!tr.dataset.id) return; const p=PROSPECTS.find(x=>x.id===tr.dataset.id); const b=e.target.closest('[data-a]');
   if(!b){ if(!e.target.closest('select,input,a')) prospectModal(p); return; }
-  if(b.dataset.a==='wa') prospectWa(p); if(b.dataset.a==='edit') prospectModal(p); if(b.dataset.a==='conv') convertProspect(p);
+  if(b.dataset.a==='wa') prospectWa(p); if(b.dataset.a==='sms') prospectWa(p,'sms'); if(b.dataset.a==='call') logContact(prospectTarget(p),'مكالمة'); if(b.dataset.a==='edit') prospectModal(p); if(b.dataset.a==='conv') convertProspect(p);
 });
 
 /* ================= المهام ================= */
