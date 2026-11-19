@@ -359,11 +359,12 @@ pre.code{display:block;padding:12px;overflow:auto;max-height:240px;font-size:12p
           <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="pq" placeholder="بحث بالاسم، الهاتف، المنتج، المصدر..."></div>
           <select id="pAssigned"><option value="">كل المسؤولين</option></select>
           <select id="pSource"></select>
+          <button class="btn" id="pSort" type="button"></button>
           <select id="pFollow"><option value="">كل المواعيد</option><option value="due">متابعة اليوم أو متأخرة</option><option value="never">لم يتم التواصل بعد</option></select>
         </div>
         <div class="card">
           <div class="tbl-wrap"><table>
-            <thead><tr><th>الاسم</th><th>الهاتف</th><th>الولاية</th><th>المنتج</th><th>المصدر</th><th>الحالة</th><th>آخر تواصل</th><th>المتابعة</th><th>المسؤول</th><th style="width:110px"></th></tr></thead>
+            <thead><tr><th id="pSortTh" style="cursor:pointer;white-space:nowrap" title="اضغط لقلب الترتيب">تاريخ الإضافة ▼</th><th>الاسم</th><th>الهاتف</th><th>الولاية</th><th>المنتج</th><th>المصدر</th><th>الحالة</th><th>آخر تواصل</th><th>المتابعة</th><th>المسؤول</th><th style="width:110px"></th></tr></thead>
             <tbody id="pBody"></tbody>
           </table></div>
           <div class="empty hidden" id="pEmpty">لا يوجد زبائن محتملون</div>
@@ -637,7 +638,7 @@ if(!IN_GAS && SCRIPT_URL) LS.url = SCRIPT_URL;
 let ME = null, CFG = {}, USERS = [], TEMPLATES = [], PROSPECTS = [], TASKS = [];
 let DATA = {headers:[],rows:[]}, ORDERS = [], ORDERS_LOADED = false;
 let VIEW = {status:'',q:'',wilaya:'',trk:'',conf:'',tech:'',period:'',from:'',to:'',page:0}; let SEL = new Set();
-let PV = {status:'',q:'',assigned:'',follow:'',source:''};
+let PV = {status:'',q:'',assigned:'',follow:'',source:'',asc:false};
 let TV = {mode:'table',status:'',q:'',type:'',assigned:'',month:null,day:null};
 let FEES = null; const COMMUNES = {};
 let CURRENT = '';
@@ -1318,17 +1319,26 @@ $('#bTrack').onclick=async e=>{ const l=selected().filter(o=>o.tracking); if(!l.
 
 /* ================= الزبائن المحتملون ================= */
 async function loadProspects(silent){
-  if(!silent) $('#pBody').innerHTML='<tr><td colspan="10" class="empty">جارٍ التحميل...</td></tr>';
+  if(!silent) $('#pBody').innerHTML='<tr><td colspan="11" class="empty">جارٍ التحميل...</td></tr>';
   try{ PROSPECTS = await api('table.list',{table:'prospects'}); renderProspects(); }
-  catch(e){ if(!silent) $('#pBody').innerHTML=`<tr><td colspan="10" class="empty">${esc(e.message)}</td></tr>`; }
+  catch(e){ if(!silent) $('#pBody').innerHTML=`<tr><td colspan="11" class="empty">${esc(e.message)}</td></tr>`; }
 }
+/** تاريخ قابل للترتيب: يقبل 2026-11-15 10:30 أو 15/11/2026 10:30 */
+function sortKey(s){
+  s=String(s||'').trim(); let m=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?/);
+  if(m) return `${m[1]}-${pad(m[2])}-${pad(m[3])} ${pad(m[4]||0)}:${pad(m[5]||0)}`;
+  m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})(?:[ T](\d{1,2}):(\d{2}))?/);
+  if(m) return `${m[3]}-${pad(m[2])}-${pad(m[1])} ${pad(m[4]||0)}:${pad(m[5]||0)}`;
+  return '';
+}
+function fmtAdded(s){ const k=sortKey(s); if(!k) return esc(s||'—'); const [d,t]=k.split(' '); return `${esc(d)}${t&&t!=='00:00'?`<div class="sub">${esc(t)}</div>`:''}`; }
 function pFiltered(){
   const q=norm(PV.q), today=TODAY();
   return PROSPECTS.filter(p=>
     (!PV.status || p.status===PV.status) && (!PV.assigned || p.assigned_to===PV.assigned) && (!PV.source || (PV.source==='_none'? !p.source : p.source===PV.source)) &&
     (!PV.follow || (PV.follow==='due' ? (p.next_followup && p.next_followup<=today && p.status!==CFG.converted) : !p.last_contact)) &&
     (!q || norm([p.name,p.phone,p.email,p.product,p.source,p.notes,p.commune].join(' ')).includes(q))
-  ).sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+  ).sort((a,b)=>{ const x=sortKey(a.created_at), y=sortKey(b.created_at); if(x===y) return (PV.asc?1:-1)*(a._r-b._r); if(!x) return 1; if(!y) return -1; return PV.asc? x.localeCompare(y) : y.localeCompare(x); });
 }
 function renderProspects(){
   const srcs={}; PROSPECTS.forEach(p=>{ if(p.source) srcs[p.source]=(srcs[p.source]||0)+1; });
@@ -1341,6 +1351,7 @@ function renderProspects(){
   $('#pBody').innerHTML=l.map(p=>{
     const w=wilayaCode(p.wilaya); const due=p.next_followup && p.next_followup<=today && p.status!==CFG.converted;
     return `<tr data-id="${esc(p.id)}">
+      <td style="white-space:nowrap">${fmtAdded(p.created_at)}</td>
       <td><b>${esc(p.name)}</b>${p.notes?`<div class="sub">${esc(p.notes.slice(0,50))}</div>`:''}</td>
       <td><span class="ph">${esc(p.phone)}</span>${p.email?`<div class="sub" dir="ltr" style="text-align:right">${esc(p.email)}</div>`:''}</td>
       <td>${w?esc(wName(w)):esc(p.wilaya||'—')}${p.commune?`<div class="sub">${esc(p.commune)}</div>`:''}</td>
@@ -1414,6 +1425,9 @@ $('#pq').oninput=e=>{ PV.q=e.target.value; renderProspects(); };
 $('#pAssigned').onchange=e=>{ PV.assigned=e.target.value; renderProspects(); };
 $('#pFollow').onchange=e=>{ PV.follow=e.target.value; renderProspects(); };
 $('#pSource').onchange=e=>{ PV.source=e.target.value; renderProspects(); };
+const pSortLabel=()=>{ $('#pSort').innerHTML = PV.asc ? '⇅ الأقدم أولاً' : '⇅ الأحدث أولاً'; $('#pSortTh').textContent = 'تاريخ الإضافة ' + (PV.asc?'▲':'▼'); };
+$('#pSort').onclick=$('#pSortTh').onclick=()=>{ PV.asc=!PV.asc; pSortLabel(); renderProspects(); };
+pSortLabel();
 $('#pBody').addEventListener('change',async e=>{
   if(!e.target.classList.contains('ps')) return; const p=PROSPECTS.find(x=>x.id===e.target.closest('tr').dataset.id);
   try{ await saveProspect({id:p.id,status:e.target.value}); toast('تم تغيير الحالة','ok'); }catch(err){ toast(err.message,'bad'); renderProspects(); }
