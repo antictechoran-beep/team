@@ -1021,7 +1021,7 @@ async function saveOrders(changes){
   const updates = changes.map(c=>{ const v={}; Object.entries(c.values).forEach(([k,val])=>v[colName(k)]=val); return {row:c.o._row,values:v}; });
   const res = await api('orders.update',{updates});
   changes.forEach((c,i)=>{ Object.assign(c.o,c.values); c.o._w=wilayaCode(c.o.wilaya);
-    const st=(res.stamps||[])[i]||{}; FIELDS.filter(f=>f.auto).forEach(f=>{ if(st[colName(f.k)]!==undefined) c.o[f.k]=st[colName(f.k)]; }); });
+    const st=(res.stamps||[])[i]||{}; FIELDS.filter(f=>f.auto||f.k==='assigned').forEach(f=>{ if(st[colName(f.k)]!==undefined) c.o[f.k]=st[colName(f.k)]; }); });
   let newMap=false;
   changes.forEach(c=>[...Object.keys(c.values),...FIELDS.filter(f=>f.auto&&c.o[f.k]).map(f=>f.k)].forEach(k=>{ if(!(CFG.map||{})[k]){ CFG.map=CFG.map||{}; CFG.map[k]=colName(k); newMap=true; if(!DATA.headers.includes(CFG.map[k])) DATA.headers.push(CFG.map[k]); } }));
   if(newMap && can('settings')) api('settings.save',{settings:{map:CFG.map}}).catch(()=>{});
@@ -1159,7 +1159,8 @@ function openOrder(o,opts={}){
       ${!isNew && !o.tracking && sh?`<button class="btn dark" id="oSend">${ICON.send.replace('<svg','<svg class="ico"')} حفظ وإرسال إلى شركة التوصيل</button>`:''}
       ${!isNew && can('orders_prepare') && o.tech===me() && o.status!==CFG.prepared?`${o.status!==CFG.preparing?`<button class="btn" id="oPrep1">🔧 بدء التحضير</button>`:''}<button class="btn" id="oPrep2" style="background:var(--ok);border-color:var(--ok);color:#fff">✓ تم التحضير</button>`:''}
       ${!isNew && can('prospects')?`<button class="btn" id="oToP">${ICON.convert.replace('<svg','<svg class="ico"')} تحويل إلى زبون محتمل</button>`:''}
-            ${!isNew && ME.user.isAdmin?`<button class="btn red" id="oDel">${ICON.trash.replace('<svg','<svg class="ico"')} حذف</button>`:''}
+            ${!isNew && can('tasks')?`<button class="btn" id="oTask">+ مهمة متابعة</button>`:''}
+      ${!isNew && ME.user.isAdmin?`<button class="btn red" id="oDel">${ICON.trash.replace('<svg','<svg class="ico"')} حذف</button>`:''}
       <span class="sp"></span><button class="btn" data-x>إغلاق</button>${fol?`<button class="btn pri" id="oSave">${isNew?'إضافة الطلبية':'حفظ في الشيت'}</button>`:''}
     </div>`);
   const f=$('#of',m); const F=k=>f.elements[k];
@@ -1187,6 +1188,7 @@ function openOrder(o,opts={}){
 
   if($('#oWa',m)) $('#oWa',m).onclick=()=>orderWa(o);
   if($('#oPh',m)) $('#oPh',m).onclick=e=>{ const b=e.target.closest('[data-a]'); if(!b) return; if(b.dataset.a==='sms') orderWa(o,'sms'); else logContact(orderTarget(o),'مكالمة'); };
+  if($('#oTask',m)) $('#oTask',m).onclick=()=>taskModal(null,{title:'متابعة طلبية: '+o.name,type:'متابعة',due_date:TODAY(),related:`طلبية ${o.ref||'#'+o._row} - ${o.name} (${digits(o.phone)||o.phone})`,assigned_to:o.assigned||me()});
   if($('#oDel',m)) $('#oDel',m).onclick=async()=>{ if(await deleteOrders([o])) m.remove(); };
   [['#oPrep1',()=>CFG.preparing,'بدأ التحضير'],['#oPrep2',()=>CFG.prepared,'✓ الطلبية جاهزة للإرسال']].forEach(([id,st,msg])=>{ const b=$(id,m); if(b) b.onclick=async()=>{ b.disabled=true; try{ await saveOrders([{o,values:{status:st()}}]); toast(msg,'ok'); m.remove(); render(); }catch(e){ toast(e.message,'bad'); b.disabled=false; } }; });
   if($('#oSave',m)) $('#oSave',m).onclick=async e=>{
@@ -1201,8 +1203,7 @@ function openOrder(o,opts={}){
         if(can('orders_view')) loadOrders(); return;
       }
       const c=changed(v); if(!can('orders_edit')) Object.keys(c).forEach(k=>{ if(!['status','assigned','tech','note'].includes(k)) delete c[k]; });
-      if(c.tech && !o.tech && (v.status===CFG.confirmed) && c.status===undefined) c.status=CFG.preparing;
-      if(Object.keys(c).length) await saveOrders([{o,values:c}]);
+            if(Object.keys(c).length) await saveOrders([{o,values:c}]);
       toast('تم الحفظ في الشيت','ok'); m.remove(); render();
     }catch(err){ toast(err.message,'bad'); e.target.disabled=false; }
   };
@@ -1273,7 +1274,7 @@ $('#fTech').onchange=e=>{ VIEW.tech=e.target.value; VIEW.page=0; render(); };
 $('#fPeriod').onchange=e=>{ VIEW.period=e.target.value; VIEW.page=0; $('#fCustom').classList.toggle('hidden',VIEW.period!=='custom'); render(); };
 $('#fFrom').onchange=e=>{ VIEW.from=e.target.value; render(); }; $('#fTo').onchange=e=>{ VIEW.to=e.target.value; render(); };
 $('#bTech').onchange=async e=>{ const v=e.target.value; if(!v) return; const val=v==='_none'?'':v;
-  try{ await saveOrders(selected().map(o=>{ const vals={tech:val}; if(val && (o.status===CFG.confirmed||!o.tech)) vals.status=CFG.preparing; return {o,values:vals}; })); toast(val?'حُوّلت إلى التقني '+userName(val):'أُلغي التقني','ok'); SEL.clear(); render(); }catch(err){ toast(err.message,'bad'); render(); } };
+  try{ await saveOrders(selected().map(o=>{ return {o,values:{tech:val}}; })); toast(val?'حُوّلت إلى التقني '+userName(val):'أُلغي التقني','ok'); SEL.clear(); render(); }catch(err){ toast(err.message,'bad'); render(); } };
 $('#bAssign').onchange=async e=>{ const v=e.target.value; if(!v) return; const val=v==='_none'?'':v;
   try{ await saveOrders(selected().map(o=>({o,values:{assigned:val}}))); toast(val?'أُسندت إلى '+userName(val):'أُلغي الإسناد','ok'); SEL.clear(); render(); }catch(err){ toast(err.message,'bad'); render(); } };
 $('#pgPrev').onclick=()=>{ VIEW.page--; render(); }; $('#pgNext').onclick=()=>{ VIEW.page++; render(); };
